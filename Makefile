@@ -3,7 +3,7 @@ PYTHON=python3
 
 .PHONY: test
 test:
-	$(PYTHON) -m unittest discover
+	$(PYTHON) -m unittest discover -v
 
 .PHONY: wheel
 wheel:
