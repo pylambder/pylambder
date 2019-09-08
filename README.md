@@ -1,4 +1,4 @@
-<a name="logo"/>
+<deva name="logo"/>
 <div align="center">
 <a href="https://github.com/wgslr/pylambder" target="_blank">
 <img src="logo.svg" alt="Logo" width="210" height="142"></img>
@@ -54,13 +54,16 @@ make test
 Unit tests are created using python's unitttest. They are in `test/` directory
 and should be in files named `test_*.py`. This allows their autodiscovery.
 
-### And coding style tests
+### Linter
 
-Explain what these tests test and why
+Install with `pip install -r dev-requirements.txt` or `pip install .[dev]` (this installs whole `pylambder`).
 
+Run:
+```bash
+wgslr/pylambder$ pylint pylambder
 ```
-Give an example
-```
+
+The linter is configured in `pylintrc`. File `tox.ini` is also provided to configure `pep8` linter, used e.g. by Visual Studio Code.
 
 ## Deployment
 
