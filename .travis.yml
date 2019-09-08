@@ -1,0 +1,21 @@
+dist: xenial
+language: python
+python:
+  - "3.7"
+
+cache: pip
+
+install:
+  - pip install .[dev,test]
+
+stages:
+  - test
+
+jobs:
+  include:
+    - name: "tests"
+      stage: test
+      script: "make test"
+    - name: "linter"
+      stage: test
+      script: "pylint pylambder"
