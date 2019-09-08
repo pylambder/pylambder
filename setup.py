@@ -96,7 +96,7 @@ setup(
     #
     #   $ pip install sampleproject[dev]
     extras_require={  # Optional
-        'dev': [],
+        'dev': ['pylint'],
         'test': [],
     },
 )
