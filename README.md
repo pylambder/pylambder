@@ -45,15 +45,14 @@ End with an example of getting some data out of the system or using it for a lit
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
+```bash
+make test
 ```
-Give an example
-```
+
+### Unit tests
+
+Unit tests are created using python's unitttest. They are in `test/` directory
+and should be in files named `test_*.py`. This allows their autodiscovery.
 
 ### And coding style tests
 
