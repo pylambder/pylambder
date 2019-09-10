@@ -20,8 +20,10 @@ async def apply(module, function, *args, **kwargs):
         print("await ws.send ", payload_json)
         await ws.send(payload_json)
         print("await ws.recv")
-        await ws.recv()
-    return
+        response = await ws.recv()
+        response_term = json.loads(response)
+        # request_id = response_term['requestId']
+        return response_term['result']
 
 
 def getmodule(func) -> str:
