@@ -137,6 +137,7 @@ Resources:
         - "/"
         - - "integrations"
           - !Ref DisconnectInteg
+
   DisconnectInteg:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
