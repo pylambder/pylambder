@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   sam-app
@@ -13,110 +13,14 @@ Globals:
 Parameters:
   TableName:
     Type: String
-    Default: 'task-results'
+    Default: "task-results"
     Description: (Required) The name of the new DynamoDB to store results.
     MinLength: 3
     MaxLength: 50
     AllowedPattern: ^[A-Za-z_\-]+$
 
 Resources:
-  ResultsTable:
-    Type: 'AWS::Serverless::SimpleTable'
-    Properties:
-      TableName: task-result
-      PrimaryKey:
-        Name: RequestId
-        Type: String
-  
-  TasksWebSocket:
-    Type: AWS::ApiGatewayV2::Api
-    Properties:
-      Name: TasksWebSocket
-      ProtocolType: WEBSOCKET
-      RouteSelectionExpression: "$request.body.action"
-
-  ConnectRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref TasksWebSocket
-      RouteKey: $connect
-      AuthorizationType: NONE
-      OperationName: ConnectRoute
-      Target: !Join # Join with specified delimiter (here: `/`)
-        - '/'
-        - - 'integrations'
-          - !Ref ConnectInteg
-  ConnectInteg:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref TasksWebSocket
-      Description: Connect Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::Sub:  # Variable interpolation
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
-
-  DisconnectRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref TasksWebSocket
-      RouteKey: $disconnect
-      AuthorizationType: NONE
-      OperationName: DisconnectRoute
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref DisconnectInteg
-  DisconnectInteg:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref TasksWebSocket
-      Description: Disconnect Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::Sub:
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
-  TaskExecuteRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref TasksWebSocket
-      RouteKey: execute
-      AuthorizationType: NONE
-      OperationName: TaskExecuteRoute
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref TaskExecuteInteg
-  TaskExecuteInteg:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref TasksWebSocket
-      Description: Execute Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::Sub:
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TaskExecuteFunction.Arn}/invocations
-
-  TaskResultRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref TasksWebSocket
-      RouteKey: result
-      AuthorizationType: NONE
-      OperationName: TaskResultRoute
-      Target: !Join
-        - '/'
-        - - 'integrations'
-          - !Ref TaskResultInteg
-  TaskResultInteg:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref TasksWebSocket
-      Description: Result Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::Sub:
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TaskResultFunction.Arn}/invocations
+  ## Global
 
   Deployment:
     Type: AWS::ApiGatewayV2::Deployment
@@ -136,106 +40,7 @@ Resources:
       DeploymentId: !Ref Deployment
       ApiId: !Ref TasksWebSocket
 
-  OnConnectFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: onconnect/
-      Handler: handler.lambda_handler
-      MemorySize: 256
-      Runtime: python3.7
-
-  OnConnectPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - TasksWebSocket
-      - OnConnectFunction
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref OnConnectFunction
-      Principal: apigateway.amazonaws.com
-
-  OnDisconnectFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ondisconnect/
-      Handler: handler.lambda_handler
-      MemorySize: 256
-      Runtime: python3.7
-
-  OnDisconnectPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - TasksWebSocket
-      - OnDisconnectFunction
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref OnDisconnectFunction
-      Principal: apigateway.amazonaws.com
-
-  TaskExecuteFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: taskexecute/
-      Handler: handler.lambda_handler
-      MemorySize: 256
-      Runtime: python3.7
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref TableName
-          DIR_NAME: taskexecute
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TableName
-        - Statement:
-            - Effect: Allow
-              Action:
-                - 'execute-api:ManageConnections'
-              Resource:
-                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TasksWebSocket}/*'
-      Layers:
-        - !Ref MainLayer
-        - !Ref ProjectLayer
-  TaskExecutePermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - TasksWebSocket
-      - TaskExecuteFunction
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref TaskExecuteFunction
-      Principal: apigateway.amazonaws.com
-
-  TaskResultFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: taskresult/
-      Handler: handler.lambda_handler
-      MemorySize: 256
-      Runtime: python3.7
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref TableName
-          DIR_NAME: taskresult
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TableName
-        - Statement:
-            - Effect: Allow
-              Action:
-                - 'execute-api:ManageConnections'
-              Resource:
-                - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TasksWebSocket}/*'
-      Layers:
-        - !Ref MainLayer
-  TaskResultPermission:
-    Type: AWS::Lambda::Permission
-    DependsOn:
-      - TasksWebSocket
-      - TaskExecuteFunction
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref TaskExecuteFunction
-      Principal: apigateway.amazonaws.com
+  ## Lambda layers
 
   MainLayer:
     Type: AWS::Serverless::LayerVersion
@@ -258,6 +63,218 @@ Resources:
         - python3.7
       LicenseInfo: MIT
       RetentionPolicy: Retain
+
+  ## Storage
+
+  ResultsTable:
+    Type: "AWS::Serverless::SimpleTable"
+    Properties:
+      TableName: task-result
+      PrimaryKey:
+        Name: RequestId
+        Type: String
+
+  ## API
+
+  TasksWebSocket:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: TasksWebSocket
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+
+  ## Connect
+
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref TasksWebSocket
+      RouteKey: $connect
+      AuthorizationType: NONE
+      OperationName: ConnectRoute
+      Target: !Join # Join with specified delimiter (here: `/`)
+        - "/"
+        - - "integrations"
+          - !Ref ConnectInteg
+  ConnectInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref TasksWebSocket
+      Description: Connect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: # Variable interpolation
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
+
+  OnConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: onconnect/
+      Handler: handler.lambda_handler
+      MemorySize: 256
+      Runtime: python3.7
+
+  OnConnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - TasksWebSocket
+      - OnConnectFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref OnConnectFunction
+      Principal: apigateway.amazonaws.com
+
+  ## Disconnect
+
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref TasksWebSocket
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      Target: !Join
+        - "/"
+        - - "integrations"
+          - !Ref DisconnectInteg
+  DisconnectInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref TasksWebSocket
+      Description: Disconnect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
+
+  OnDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ondisconnect/
+      Handler: handler.lambda_handler
+      MemorySize: 256
+      Runtime: python3.7
+
+  OnDisconnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - TasksWebSocket
+      - OnDisconnectFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref OnDisconnectFunction
+      Principal: apigateway.amazonaws.com
+
+  ## TaskExecute
+
+  TaskExecuteRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref TasksWebSocket
+      RouteKey: execute
+      AuthorizationType: NONE
+      OperationName: TaskExecuteRoute
+      Target: !Join
+        - "/"
+        - - "integrations"
+          - !Ref TaskExecuteInteg
+
+  TaskExecuteInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref TasksWebSocket
+      Description: Execute Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TaskExecuteFunction.Arn}/invocations
+
+  TaskExecuteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: taskexecute/
+      Handler: handler.lambda_handler
+      MemorySize: 256
+      Runtime: python3.7
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableName
+          DIR_NAME: taskexecute
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "execute-api:ManageConnections"
+              Resource:
+                - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TasksWebSocket}/*"
+      Layers:
+        - !Ref MainLayer
+        - !Ref ProjectLayer
+
+  TaskExecutePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - TasksWebSocket
+      - TaskExecuteFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TaskExecuteFunction
+      Principal: apigateway.amazonaws.com
+
+  ## TaskResult
+
+  TaskResultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref TasksWebSocket
+      RouteKey: result
+      AuthorizationType: NONE
+      OperationName: TaskResultRoute
+      Target: !Join
+        - "/"
+        - - "integrations"
+          - !Ref TaskResultInteg
+  TaskResultInteg:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref TasksWebSocket
+      Description: Result Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TaskResultFunction.Arn}/invocations
+
+  TaskResultFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: taskresult/
+      Handler: handler.lambda_handler
+      MemorySize: 256
+      Runtime: python3.7
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableName
+          DIR_NAME: taskresult
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "execute-api:ManageConnections"
+              Resource:
+                - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TasksWebSocket}/*"
+      Layers:
+        - !Ref MainLayer
+
+  TaskResultPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - TasksWebSocket
+      - TaskExecuteFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TaskExecuteFunction
+      Principal: apigateway.amazonaws.com
 
 Outputs:
   ResultsTableArn:
@@ -294,4 +311,15 @@ Outputs:
 
   WebSocketURI:
     Description: "The WSS Protocol URI to connect to"
-    Value: !Join [ '', [ 'wss://', !Ref TasksWebSocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
+    Value:
+      !Join [
+        "",
+        [
+          "wss://",
+          !Ref TasksWebSocket,
+          ".execute-api.",
+          !Ref "AWS::Region",
+          ".amazonaws.com/",
+          !Ref "Stage",
+        ],
+      ]
