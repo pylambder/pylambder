@@ -1,11 +1,11 @@
 S3BUCKET = wgeisler-sam
 
+packaged.yaml: .ALWAYS_REBUILD lambda-layers/dependencies-layer.zip lambda-layers/project-layer.zip
+	sam package --s3-bucket $(S3BUCKET) --output-template-file packaged.yaml
+
 .PHONY: start-local-api
 start-local-api: build
 	sam local start-api
-
-packaged.yaml: .ALWAYS_REBUILD
-	sam package --s3-bucket $(S3BUCKET) --output-template-file packaged.yaml
 
 .PHONY: deploy
 deploy: packaged.yaml
