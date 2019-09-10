@@ -2,6 +2,7 @@
 
 import time
 import datetime
+import asyncio
 from aws_task import remote
 
 @remote
@@ -13,5 +14,5 @@ def myfunc(arg1, arg2):
 
 if __name__ == '__main__':
     print("{} Start task".format(datetime.datetime.now().time()))
-    result = myfunc(3, 4)
+    result = asyncio.run(myfunc(3, 4))
     print("{} Task result: {}".format(datetime.datetime.now().time(), result))

@@ -1,10 +1,10 @@
 from functools import wraps
-import websocket
+import websockets
 import inspect
 import json
 import asyncio
 
-API_URL = ''
+API_URL = 'wss://4e8i4x0ib3.execute-api.us-east-1.amazonaws.com/Prod'
 
 async def apply(module, function, *args, **kwargs):
     kwargs['__incloud__'] = True
@@ -12,11 +12,15 @@ async def apply(module, function, *args, **kwargs):
         'module': module,
         'function': function,
         'args': args,
-        'kwargs': kwargs
+        'kwargs': kwargs,
+        'action': 'execute'
     }
-    async with websocket.connect(API_URL) as websocket:
-        await websocket.send(payload)
-        await websocket.rcv()
+    payload_json = json.dumps(payload)
+    async with websockets.connect(API_URL) as ws:
+        print("await ws.send ", payload_json)
+        await ws.send(payload_json)
+        print("await ws.recv")
+        await ws.recv()
     return
 
 
