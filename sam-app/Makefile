@@ -15,10 +15,11 @@ deploy: packaged.yaml
 build:
 	sam build
 
-layer.zip: requirements.txt
+lambda-layers/dependencies-layer.zip: requirements.txt hello_world/requirements.txt
 	docker run -t --rm -w "/opt" -v "$(PWD):/out" -v "$(PWD)/requirements.txt:/requirements.txt:ro" \
+		-v "$(PWD)/hello_world/requirements.txt:/requirements2.txt:ro" \
 		lambci/lambda:build-python3.7 bash -c \
-		"pip3 install -r /requirements.txt -t python/lib/python3.7/site-packages/ \
+		"pip3 install -r /requirements.txt -r /requirements2.txt -t python/lib/python3.7/site-packages/ \
 		&& zip -FSr /out/$@ python \
 		&& chown $(shell id -u):$(shell id -g) /out/$@"
 
