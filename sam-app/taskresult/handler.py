@@ -17,7 +17,7 @@ def lambda_handler(event, context):
     request_context = event.get('requestContext', {})
 
     data = json.loads(event.get('body', '{}')).get('data')
-    request_id = event.get('RequestId')
+    request_id = request_context.get('RequestId')
     domain_name = request_context.get('domainName')
     stage = request_context.get('stage')
     connection_id = request_context.get('connectionId')
