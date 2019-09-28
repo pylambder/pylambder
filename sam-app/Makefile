@@ -1,4 +1,4 @@
-S3BUCKET = wgeisler-sam
+S3BUCKET = ajopek-test-bucket
 
 packaged.yaml: .ALWAYS_REBUILD lambda-layers/dependencies-layer.zip lambda-layers/project-layer.zip
 	sam package --s3-bucket $(S3BUCKET) --output-template-file packaged.yaml

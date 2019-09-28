@@ -1,2 +1,2 @@
 boto3==1.9.210
-
+websockets==8.0.2

@@ -66,5 +66,5 @@ def lambda_handler(event, context):
     logger.debug("Storing call result")
     dynamodb.put_item(TableName=os.environ['TABLE_NAME'], Item=resultData)
 
-    return {'statusCode': 200,
+    return {'statusCode': 418,
              'body': 'ok'}
