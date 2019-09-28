@@ -47,7 +47,7 @@ def lambda_handler(event, context):
 
     resultData = {
         'RequestId': {'S': request_id},
-        'Result': {'B': result_json}
+        'Result': {'S': result_json}
     }
 
     logger.debug("Creating sockets client")
