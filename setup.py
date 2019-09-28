@@ -11,6 +11,14 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
+with open('pylambder/__init__.py', 'r') as f:
+    for line in f:
+        if line.startswith('__version__'):
+            version = line.strip().split('=')[1].strip(' \'"')
+            break
+    else:
+        version = '0.0.1'
+
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
@@ -24,7 +32,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.0',  # Required
+    version=version,  # Required
 
     description='Remote task execution on AWS Lambda for Python',
     long_description=long_description,
@@ -88,7 +96,7 @@ setup(
     #
     #   $ pip install sampleproject[dev]
     extras_require={  # Optional
-        'dev': [],
+        'dev': ['pylint'],
         'test': [],
     },
 )
