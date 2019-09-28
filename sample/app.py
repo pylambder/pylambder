@@ -8,7 +8,7 @@ from pylambder.aws_task import remote
 @remote
 def myfunc(arg1, arg2):
     print("This will be logged in the cloud")
-    time.sleep(5)
+    time.sleep(1)
     print("Computation finished")
     return {'sum': arg1 + arg2}
 

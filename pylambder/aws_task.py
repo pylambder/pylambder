@@ -16,12 +16,12 @@ async def apply(module, function, *args, **kwargs):
         response = await ws.recv()
         response_term = json.loads(response)
         request_id = response_term['requestId']
-        print("Result: ", response_term['result'])
+        print("Result: ", response_term)
         result_payload = get_result_payload(request_id)
-        print("await ws.send ", execute_payload)
+        print("await ws.send ", result_payload)
         await ws.send(result_payload)
-        result_response = ws.recv()
-        return result_response['result']
+        result_response = await ws.recv()
+        return result_response
 
 def get_exeucte_payload(module, function, args, kwargs) -> str:
     payload_execute = {
@@ -35,7 +35,7 @@ def get_exeucte_payload(module, function, args, kwargs) -> str:
 
 def get_result_payload(request_id) -> str:
     payload_result = {
-        'requestId': request_id,
+        'RequestId': request_id,
         'action': 'result'
     }
     return json.dumps(payload_result)

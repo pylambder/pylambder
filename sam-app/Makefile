@@ -1,4 +1,5 @@
 S3BUCKET = ajopek-test-bucket
+CLOUDFORMATION_STACK = websocket-task-poc
 
 packaged.yaml: .ALWAYS_REBUILD lambda-layers/dependencies-layer.zip lambda-layers/project-layer.zip
 	sam package --s3-bucket $(S3BUCKET) --output-template-file packaged.yaml
@@ -9,7 +10,7 @@ start-local-api: build
 
 .PHONY: deploy
 deploy: packaged.yaml
-	sam deploy --template-file packaged.yaml --stack-name new-stack --capabilities CAPABILITY_IAM
+	sam deploy --template-file packaged.yaml --stack-name $(CLOUDFORMATION_STACK) --capabilities CAPABILITY_IAM
 
 .PHONY: build
 build:
