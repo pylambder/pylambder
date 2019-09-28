@@ -3,7 +3,7 @@
 import time
 import datetime
 import asyncio
-from aws_task import remote
+from pylambder.aws_task import remote
 
 @remote
 def myfunc(arg1, arg2):
