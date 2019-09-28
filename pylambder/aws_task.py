@@ -3,8 +3,11 @@ import websockets
 import inspect
 import json
 import asyncio
+import boto3
 
-API_URL = 'wss://4e8i4x0ib3.execute-api.us-east-1.amazonaws.com/Prod'
+cloudformation = boto3.resource('cloudformation')
+stack = cloudformation.Stack('websocket-task-poc')
+API_URL = [x for x in stack.outputs if x['OutputKey'] == 'WebSocketURI'][0]['OutputValue']
 
 async def apply(module, function, *args, **kwargs):
     kwargs['__incloud__'] = True
