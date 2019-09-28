@@ -23,8 +23,10 @@ lambda-layers/dependencies-layer.zip: requirements.txt
 		&& zip -FSr /out/$@ python \
 		&& chown $(shell id -u):$(shell id -g) /out/$@"
 
-lambda-layers/project-layer.zip: $(wildcard hello_world/*.py)
-	./make-project-layer.sh hello_world $@
+lambda-layers/project-layer.zip: $(wildcard ../sample/*.py)
+	cp -a ../pylambder ../sample/
+	./make-project-layer.sh ../sample $@
+	rm -rf ../sample/pylambder
 	
 
 .ALWAYS_REBUILD:
