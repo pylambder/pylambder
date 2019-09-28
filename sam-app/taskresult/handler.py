@@ -36,7 +36,7 @@ def lambda_handler(event, context):
         result = results['Item']
         try:
             _ = apigw_management.post_to_connection(ConnectionId=connection_id,
-                                                     Data=json.dumps({"result": json.loads(result['Result']['B'])}))
+                                                     Data=json.dumps({"result": json.loads(result['Result']['S'])}))
         except botocore.exceptions.ClientError as e:
             logger.debug('post_to_connection failed: %s' % e)
             return {'statusCode': 500,
