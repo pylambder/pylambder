@@ -271,10 +271,10 @@ Resources:
     Type: AWS::Lambda::Permission
     DependsOn:
       - TasksWebSocket
-      - TaskExecuteFunction
+      - TaskResultFunction
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref TaskExecuteFunction
+      FunctionName: !Ref TaskResultFunction
       Principal: apigateway.amazonaws.com
 
 Outputs:
