@@ -5,13 +5,12 @@ import json
 import asyncio
 import boto3
 
-cloudformation = boto3.resource('cloudformation')
-stack = cloudformation.Stack('websocket-task-poc')
-API_URL = [x for x in stack.outputs if x['OutputKey'] == 'WebSocketURI'][0]['OutputValue']
-
 async def apply(module, function, *args, **kwargs):
     kwargs['__incloud__'] = True
     execute_payload = get_exeucte_payload(module, function, args, kwargs)
+    cloudformation = boto3.resource('cloudformation')
+    stack = cloudformation.Stack('websocket-task-poc')
+    API_URL = [x for x in stack.outputs if x['OutputKey'] == 'WebSocketURI'][0]['OutputValue']
     async with websockets.connect(API_URL) as ws:
         print("await ws.send ", execute_payload)
         await ws.send(execute_payload)
