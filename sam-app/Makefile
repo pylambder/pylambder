@@ -1,0 +1,32 @@
+S3BUCKET = wgeisler-sam
+
+packaged.yaml: .ALWAYS_REBUILD lambda-layers/dependencies-layer.zip lambda-layers/project-layer.zip
+	sam package --s3-bucket $(S3BUCKET) --output-template-file packaged.yaml
+
+.PHONY: start-local-api
+start-local-api: build
+	sam local start-api
+
+.PHONY: deploy
+deploy: packaged.yaml
+	sam deploy --template-file packaged.yaml --stack-name new-stack --capabilities CAPABILITY_IAM
+
+.PHONY: build
+build:
+	sam build
+
+lambda-layers/dependencies-layer.zip: requirements.txt hello_world/requirements.txt
+	docker run -t --rm -w "/opt" -v "$(PWD):/out" -v "$(PWD)/requirements.txt:/requirements.txt:ro" \
+		-v "$(PWD)/hello_world/requirements.txt:/requirements2.txt:ro" \
+		lambci/lambda:build-python3.7 bash -c \
+		"pip3 install -r /requirements.txt -r /requirements2.txt -t python/lib/python3.7/site-packages/ \
+		&& zip -FSr /out/$@ python \
+		&& chown $(shell id -u):$(shell id -g) /out/$@"
+
+lambda-layers/project-layer.zip: $(wildcard hello_world/*.py)
+	./make-project-layer.sh hello_world $@
+	
+
+.ALWAYS_REBUILD:
+	
+
