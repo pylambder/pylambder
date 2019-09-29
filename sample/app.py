@@ -4,6 +4,7 @@ import time
 import datetime
 import asyncio
 from pylambder.aws_task import remote
+from pylambder.websocket import WebsocketHandler
 
 @remote
 def myfunc(arg1, arg2):
@@ -14,5 +15,8 @@ def myfunc(arg1, arg2):
 
 if __name__ == '__main__':
     print("{} Start task".format(datetime.datetime.now().time()))
-    result = asyncio.run(myfunc(3, 4))
-    print("{} Task result: {}".format(datetime.datetime.now().time(), result))
+    ws_handler = WebsocketHandler()
+    ws_handler.run()
+    myfunc.delay(ws_handler, 1, 2)
+    time.sleep(10)
+    print("{} Task scheduled".format(datetime.datetime.now().time()))

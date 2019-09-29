@@ -5,6 +5,37 @@ import json
 import asyncio
 import boto3
 
+
+class AWSTask:
+    def __init__(self, f, module, function):
+        self.module = module
+        self.function = function
+        self.f = f
+
+    def run(self, *args, **kwargs):
+        return self.f(*args, **kwargs)
+
+    def delay(self, ws_handler, *args, **kwargs):
+        payload = self.get_exeucte_payload(args, kwargs)
+        ws_handler.schedule(payload)
+
+    def get_exeucte_payload(self, args, kwargs) -> str:
+        payload_execute = {
+            'module': self.module,
+            'function': self.function,
+            'args': args,
+            'kwargs': kwargs,
+            'action': 'execute'
+        }
+        return json.dumps(payload_execute)
+
+
+def remote(f):
+    module = getmodule(f)
+    function = f.__name__
+    return AWSTask(f, module, function)
+
+
 async def apply(module, function, *args, **kwargs):
     kwargs['__incloud__'] = True
     execute_payload = get_exeucte_payload(module, function, args, kwargs)
@@ -46,18 +77,3 @@ def getmodule(func) -> str:
     modfile = inspect.getmodule(func).__file__
     name = modfile.split('/')[-1].split('.')[0]
     return name
-
-
-def remote(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if kwargs.get('__incloud__', False):
-            del kwargs['__incloud__']
-            return f(*args, **kwargs)
-
-        module = getmodule(f)
-        function = f.__name__
-        if '__incloud__' in kwargs:
-            del kwargs['__incloud__']
-        return apply(module, function, *args, **kwargs)
-    return wrapper
