@@ -23,7 +23,7 @@ lambda-layers/dependencies-layer.zip: requirements.txt
 		&& zip -FSr /out/$@ python \
 		&& chown $(shell id -u):$(shell id -g) /out/$@"
 
-lambda-layers/project-layer.zip: $(wildcard ../sample/*.py)
+lambda-layers/project-layer.zip: $(wildcard ../sample/*.py) $(wildcard ../pylambder/*.py)
 	cp -a ../pylambder ../sample/
 	./make-project-layer.sh ../sample $@
 	rm -rf ../sample/pylambder
