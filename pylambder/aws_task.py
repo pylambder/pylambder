@@ -7,6 +7,7 @@ import boto3
 import uuid
 from enum import Enum
 
+TaskId = str
 
 class CloudFunction:
     def __init__(self, f, module, function):

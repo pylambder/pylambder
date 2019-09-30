@@ -4,15 +4,17 @@ import asyncio
 import boto3
 import threading
 import janus
+from pylambder import app
 
 QUEUE_MAX_SIZE = 1000
 
 
 class WebsocketHandler:
-    def __init__(self):
+    def __init__(self, app: app.Pylambder):
         self.queue = None
         self.worker = None
         self.started = False
+        self.app = app
 
     def run(self):
         if self.started:
