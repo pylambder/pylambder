@@ -7,16 +7,17 @@ import janus
 
 QUEUE_MAX_SIZE = 1000
 
+
 class WebsocketHandler:
     def __init__(self):
         self.queue = None
         self.worker = None
         self.started = False
-     
+
     def run(self):
-        if self.started: 
+        if self.started:
             raise Exception("Handler already running")
-        else: 
+        else:
             self.loop = asyncio.new_event_loop()
             self.queue = janus.Queue(loop=self.loop)
             self.worker = threading.Thread(target=self._websocket_thread)

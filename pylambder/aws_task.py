@@ -56,6 +56,7 @@ async def apply(module, function, *args, **kwargs):
         result_response = await ws.recv()
         return result_response
 
+
 def get_exeucte_payload(module, function, args, kwargs) -> str:
     payload_execute = {
         'module': module,
@@ -66,13 +67,15 @@ def get_exeucte_payload(module, function, args, kwargs) -> str:
     }
     return json.dumps(payload_execute)
 
+
 def get_result_payload(request_id) -> str:
     payload_result = {
         'RequestId': request_id,
         'action': 'result'
     }
     return json.dumps(payload_result)
-    
+
+
 def getmodule(func) -> str:
     modfile = inspect.getmodule(func).__file__
     name = modfile.split('/')[-1].split('.')[0]
