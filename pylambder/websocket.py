@@ -26,15 +26,16 @@ class WebsocketHandler:
 
     async def _websocket_producer(self, websocket):
         async for msg in websocket:
-            print(msg)
+            print("_websocket_producer:", msg)
 
     async def _websocket_consumer(self, websocket):
         while True:
             task = await self.queue.async_q.get()
-            print("Task: {}", task)
+            print("Sending task: {}", task)
             await websocket.send(task)
-            result = await websocket.rcv()
-            print(result)
+            print("Task sent. Awaitng rcv in consumer...")
+            result = await websocket.recv()
+            print("Consumer: ", result)
 
     def _websocket_thread(self):
         asyncio.set_event_loop(self.loop)
@@ -49,7 +50,9 @@ class WebsocketHandler:
             consumer_task = asyncio.ensure_future(self._websocket_consumer(ws))
             producer_task = asyncio.ensure_future(self._websocket_producer(ws))
             while True:
-                await asyncio.wait([consumer_task, producer_task], return_when=asyncio.FIRST_COMPLETED)
+                done, pending = await asyncio.wait([producer_task, consumer_task], return_when=asyncio.FIRST_COMPLETED)
+                # rethrow exceptions
+                (x.result() for x in done + pending)
 
     def schedule(self, aws_task):
         self.queue.sync_q.put(aws_task)
