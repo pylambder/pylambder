@@ -6,6 +6,7 @@ import asyncio
 import boto3
 import uuid
 from enum import Enum
+from pylambder import config
 
 TaskId = str
 
@@ -61,7 +62,8 @@ async def apply(module, function, *args, **kwargs):
     kwargs['__incloud__'] = True
     execute_payload = get_exeucte_payload(module, function, args, kwargs)
     cloudformation = boto3.resource('cloudformation')
-    stack = cloudformation.Stack('new-stack')
+    stackname = config.get('cloudformation_stack')
+    stack = cloudformation.Stack(stackname)
     API_URL = [x for x in stack.outputs if x['OutputKey'] == 'WebSocketURI'][0]['OutputValue']
     async with websockets.connect(API_URL) as ws:
         print("await ws.send ", execute_payload)
