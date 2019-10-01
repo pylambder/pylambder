@@ -1,6 +1,8 @@
 """Defines the central class of Pylambder"""
 
 import inspect
+import logging
+import os
 from typing import Dict
 
 import boto3
@@ -9,6 +11,8 @@ import pylambder.websocket
 from pylambder import aws_task, config
 from pylambder.aws_task import CloudFunction
 from pylambder.websocket import WebsocketHandler
+
+logger = logging.getLogger(__name__)
 
 
 def getmodule(func) -> str:

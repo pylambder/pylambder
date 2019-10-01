@@ -10,14 +10,15 @@ from pylambder.websocket import WebsocketHandler
 
 app = Pylambder()
 
-logging.basicConfig(format='%(asctime)s %(message)s')
+logging.basicConfig(format='%(levelname).1s %(asctime).23s %(message)s')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
 @app.task
 def myfunc(arg1, arg2):
-    print("This will be logged in the cloud")
+    print("This will be printed in the cloud")
+    logger.info("This will be logged in the cloud")
     time.sleep(1)
     print("Computation finished")
     return {'sum': arg1 + arg2}
@@ -30,4 +31,4 @@ if __name__ == '__main__':
     logger.info("Start task")
     myfunc.delay(1, 2)
     time.sleep(10)
-    print("Task scheduled")
+    logger.warning("Exiting")
