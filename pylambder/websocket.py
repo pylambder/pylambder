@@ -56,7 +56,7 @@ class WebsocketHandler:
             while True:
                 done, pending = await asyncio.wait([producer_task, consumer_task], return_when=asyncio.FIRST_COMPLETED)
                 # rethrow exceptions
-                (x.result() for x in done + pending)
+                # (x.result() for x in done + pending)
 
     def schedule(self, aws_task):
         self.queue.sync_q.put(aws_task)
