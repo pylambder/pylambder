@@ -46,6 +46,7 @@ class AWSTask:
         self.status = TaskStatus.REQUESTED
         self.args = call_args
         self.kwargs = call_kwargs
+        self.result = None
 
 
 def get_result_payload(request_id) -> str:
