@@ -31,7 +31,6 @@ def lambda_handler(event, context):
         return status 
     
     result = function.run(*args, **kwargs)
-    result_json = json.dumps(result)
 
     status = send_to_client(connection_id, {"requestId": request_id, "result": result}, apigw_management)
     if(status['statusCode'] != 200):
