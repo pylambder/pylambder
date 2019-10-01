@@ -1,5 +1,8 @@
-S3BUCKET = ajopek-test-bucket
-CLOUDFORMATION_STACK = websocket-task-poc
+CONFIG_FILE = ../local.config
+load_config = $(shell grep $(1) $(CONFIG_FILE) | cut -d = -f 2 | tr -d ' ')
+
+S3BUCKET = $(call load_config, s3bucket)
+CLOUDFORMATION_STACK = $(call load_config, cloudformation_stack)
 
 packaged.yaml: .ALWAYS_REBUILD lambda-layers/dependencies-layer.zip lambda-layers/project-layer.zip
 	sam package --s3-bucket $(S3BUCKET) --output-template-file packaged.yaml

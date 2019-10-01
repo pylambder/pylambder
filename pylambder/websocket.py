@@ -4,13 +4,13 @@ import asyncio
 import boto3
 import threading
 import janus
-from pylambder import app
+from pylambder import config
 
 QUEUE_MAX_SIZE = 1000
 
 
 class WebsocketHandler:
-    def __init__(self, app: app.Pylambder):
+    def __init__(self, app = None):
         self.queue = None
         self.worker = None
         self.started = False
@@ -46,7 +46,8 @@ class WebsocketHandler:
 
     async def _websocket_loop(self):
         cloudformation = boto3.resource('cloudformation')
-        stack = cloudformation.Stack('websocket-task-poc')
+        stackname = config.get('cloudformation_stack')
+        stack = cloudformation.Stack(stackname)
         API_URL = [x for x in stack.outputs if x['OutputKey'] == 'WebSocketURI'][0]['OutputValue']
         print("Api URL: {}", API_URL)
         async with websockets.connect(API_URL) as ws:
