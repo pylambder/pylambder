@@ -20,6 +20,7 @@ def myfunc(arg1, arg2):
     print("This will be printed in the cloud")
     logger.info("This will be logged in the cloud")
     time.sleep(1)
+    raise NameError("My name is not myfunc, for you it's mr. myfunc!")
     print("Computation finished")
     return {'sum': arg1 + arg2}
 

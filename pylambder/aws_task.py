@@ -5,7 +5,7 @@ import json
 import asyncio
 import boto3
 import uuid
-from enum import Enum
+from enum import IntEnum
 from pylambder import config
 
 TaskId = str
@@ -27,8 +27,7 @@ class CloudFunction:
         self.app.websocket_hander.schedule(awstask)
 
 
-
-class TaskStatus(Enum):
+class TaskStatus(IntEnum):
     REQUESTED = 1  # the default state after requesting task execution
     SENT = 2  # message scheduling the task sent to cloud
     STARTED = 3  # the cloud confirmed receiving the task
