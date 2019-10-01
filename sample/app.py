@@ -20,9 +20,14 @@ def myfunc(arg1, arg2):
     print("This will be printed in the cloud")
     logger.info("This will be logged in the cloud")
     time.sleep(5)
-    raise NameError("My name is not myfunc, for you it's mr. myfunc!")
+    #raise NameError("My name is not myfunc, for you it's mr. myfunc!")
     print("Computation finished")
     return {'sum': arg1 + arg2}
+
+
+def test_callback(result):
+    print("Callback: {}".format(result['sum'] + 100))
+    return result['sum'] + 100
 
 
 if __name__ == '__main__':
@@ -30,9 +35,9 @@ if __name__ == '__main__':
     pylambder_logger.setLevel(logging.DEBUG)
 
     logger.info("Start task")
-    task = myfunc.delay(1, 2)
+    task = myfunc.delay(1, 2).set_callback(test_callback)
     logger.warning("Before wait: {}".format(datetime.datetime.now().time()))
-    task.wait()
     logger.warning("After wait: {}".format(datetime.datetime.now().time()))
+    #logger.warning("Result: {}".format(task.get_result()))
     time.sleep(10)
     logger.warning("Exiting")

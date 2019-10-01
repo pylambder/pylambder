@@ -7,7 +7,7 @@ import boto3
 import uuid
 from enum import IntEnum
 from pylambder import config
-from threading import Event
+from threading import Event, Thread
 
 TaskId = str
 
@@ -49,11 +49,49 @@ class AWSTask:
         self.kwargs = call_kwargs
         self.result = None
         self.done_flag = Event()
+        self.callback = None
+        self.callback_done = Event()
+        self.callback_thread = None
+
+    def set_callback(self, callback):
+        if self.status == TaskStatus.FINISHED:
+            self.result = callback(self.result)
+        else:
+            self.callback = callback
+        return self
+
+    def __invoke_callback(self, status, result):
+        self.result = self.callback(result)
+        self.status = status
+        self.callback_done.set()
+
+    def handle_status_with_result(self, status, result):
+        if status == TaskStatus.FINISHED:
+            if self.callback is None:
+                self.status = status
+                self.result = result
+                self.done_flag.set()
+            else:
+                self.callback_thread = Thread(target=self.__invoke_callback, args=(status, result,))
+                self.callback_thread.setDaemon(True)
+                self.done_flag.set()
+                self.callback_thread.run()
+        else:
+            self.status = status
+            self.result = result
+            self.done_flag.set()
+
+    def get_result(self):
+        if self.status == TaskStatus.FINISHED:
+            return self.result
 
     def wait(self, timeout=None):
         if self.status in (TaskStatus.FAILED, TaskStatus.META_FAILED):
             return None
-        self.done_flag.wait(timeout)
+        if self.callback is None:
+            self.done_flag.wait(timeout)
+        else:
+            self.callback_done.wait(timeout)
 
 
 def get_result_payload(request_id) -> str:
