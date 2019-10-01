@@ -8,10 +8,11 @@ import time
 import boto3
 import botocore
 
-from enum import Enum
+from pylambder.aws_task import TaskStatus
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
+
 
 def lambda_handler(event, context):
     logger.debug("Task execute event: {}".format(event))
@@ -26,19 +27,25 @@ def lambda_handler(event, context):
     scheduledResponse = {
         'requestId': request_id,
         'uuid': uuid,
-        'status': "scheduled"
+        'status': TaskStatus.STARTED
     }
+    store_state(TaskStatus.STARTED, request_id, uuid)
     status = send_to_client(connection_id, scheduledResponse, apigw_management)
     if(status['statusCode'] != 200):
         return status 
-    
-    result = function.run(*args, **kwargs)
 
-    status = send_to_client(connection_id, {"uuid": uuid, "result": result}, apigw_management)
+    try:
+        result = function.run(*args, **kwargs)
+        task_status = TaskStatus.FINISHED
+    except Exception as ex:
+        result = repr(ex)
+        task_status = TaskStatus.FAILED
+
+    status = send_to_client(connection_id, {"status": task_status, "uuid": uuid, "result": result}, apigw_management)
     if(status['statusCode'] != 200):
         return status
     
-    store_result(result, uuid)
+    store_state(task_status, request_id, uuid, result)
 
     return {'statusCode': 200,
              'body': 'ok'}
@@ -83,14 +90,17 @@ def get_function_with_args(body):
     module = importlib.import_module(module_name, package=None)
     return getattr(module, function_name), args, kwargs
 
-def store_result(result, request_id):
-    result_json = json.dumps(result)
-    
-    resultData = {
+def store_state(state, request_id, uuid, result=None):
+    stateData = {
         'RequestId': {'S': request_id},
-        'Result': {'S': result_json}
+        'State': {'S': str(int(state))},
+        'Uuid': {'S': uuid},
     }
+    if(result):
+        result_json = json.dumps(result)
+        stateData['Result'] = {'S': result_json}
+
 
     dynamodb = boto3.client('dynamodb')
     logger.debug("Storing call result")
-    dynamodb.put_item(TableName=os.environ['TABLE_NAME'], Item=resultData)
+    dynamodb.put_item(TableName=os.environ['TABLE_NAME'], Item=stateData)

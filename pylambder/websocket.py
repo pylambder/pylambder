@@ -43,7 +43,7 @@ class WebsocketHandler:
         decoded = json.loads(msg)
         task_uuid = decoded['uuid']
         if 'status' in decoded:
-            task_status = decoded['status']  # @fixme use the enum
+            task_status = aws_task.TaskStatus(int(decoded['status']))
             logger.info(F"Task {task_uuid} changed status to {task_status}")
             self.app.tasks[task_uuid].status = task_status
         elif 'result' in decoded:
