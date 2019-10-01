@@ -20,10 +20,12 @@ def lambda_handler(event, context):
     body, request_id, domain_name, stage, connection_id, request_id = unpack_event(event)
     request_id = context.aws_request_id
     apigw_management = create_socket_client(domain_name, stage)
+    uuid = body['uuid']
     function, args, kwargs = get_function_with_args(body)
 
     scheduledResponse = {
         'requestId': request_id,
+        'uuid': uuid,
         'status': "scheduled"
     }
     status = send_to_client(connection_id, scheduledResponse, apigw_management)
@@ -32,11 +34,11 @@ def lambda_handler(event, context):
     
     result = function.run(*args, **kwargs)
 
-    status = send_to_client(connection_id, {"requestId": request_id, "result": result}, apigw_management)
+    status = send_to_client(connection_id, {"uuid": uuid, "result": result}, apigw_management)
     if(status['statusCode'] != 200):
         return status
     
-    store_result(result, request_id)
+    store_result(result, uuid)
 
     return {'statusCode': 200,
              'body': 'ok'}

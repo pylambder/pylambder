@@ -8,6 +8,7 @@ import janus
 import websockets
 
 from pylambder import config
+from pylambder import aws_task
 
 QUEUE_MAX_SIZE = 1000
 
@@ -36,6 +37,23 @@ class WebsocketHandler:
     async def _receiver(self, websocket):
         async for msg in websocket:
             logger.debug("Received message: {}".format(msg))
+            self.handle_message(msg)
+
+    def handle_message(self, msg):
+        decoded = json.loads(msg)
+        task_uuid = decoded['uuid']
+        if 'status' in decoded:
+            task_status = decoded['status']  # @fixme use the enum
+            logger.info(F"Task {task_uuid} changed status to {task_status}")
+            self.app.tasks[task_uuid].status = task_status
+        elif 'result' in decoded:
+            task_result = decoded['result']
+            task_status = aws_task.TaskStatus.FINISHED
+            logger.info(F"Task {task_uuid} changed status to {task_status} with result {task_result}")
+            self.app.tasks[task_uuid].status = task_status
+            self.app.tasks[task_uuid].result = task_result
+        else:
+            logger.warn(F"Unexpected message: {msg}")
 
     async def _sender(self, websocket):
         """Read messages from the queue and sent them through the websocket"""
