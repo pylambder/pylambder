@@ -3,10 +3,12 @@
 import time
 import datetime
 import asyncio
-from pylambder.aws_task import remote
 from pylambder.websocket import WebsocketHandler
+from pylambder.base import Pylambder
 
-@remote
+app = Pylambder()
+
+@app.task
 def myfunc(arg1, arg2):
     print("This will be logged in the cloud")
     time.sleep(1)
