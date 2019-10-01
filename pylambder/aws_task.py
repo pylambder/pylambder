@@ -23,7 +23,9 @@ class CloudFunction:
 
     def delay(self, ws_handler, *args, **kwargs):
         payload = self.get_exeucte_payload(args, kwargs)
-        ws_handler.schedule(payload)
+        awstask = AWSTask(self)
+        self.app.tasks[awstask.id] = awstask
+        self.app.websocket_hander.schedule(payload)
 
     def get_exeucte_payload(self, args, kwargs) -> str:
         payload_execute = {
@@ -50,7 +52,7 @@ class AWSTask:
 
     def __init__(self, cloud_function: CloudFunction):
         self.function = cloud_function
-        self.id = uuid.uuid4()
+        self.id = str(uuid.uuid4())
         self.status = TaskStatus.REQUESTED
 
 

@@ -1,16 +1,21 @@
-import websockets
-import json
 import asyncio
-import boto3
+import json
+import logging
 import threading
+
+import boto3
 import janus
+import websockets
+
 from pylambder import config
 
 QUEUE_MAX_SIZE = 1000
 
+logger = logging.getLogger(__name__)
+
 
 class WebsocketHandler:
-    def __init__(self, app = None):
+    def __init__(self, app=None):
         self.queue = None
         self.worker = None
         self.started = False
@@ -27,32 +32,29 @@ class WebsocketHandler:
             self.worker.start()
             self.started = True
 
-    async def _websocket_producer(self, websocket):
+    async def _receiver(self, websocket):
         async for msg in websocket:
-            print("_websocket_producer:", msg)
+            logger.debug("Received message: {}".format(msg))
 
-    async def _websocket_consumer(self, websocket):
+    async def _sender(self, websocket):
+        """Read messages from the queue and sent them through the websocket"""
         while True:
+            logger.debug("Waiting for a message to appear in queue")
             task = await self.queue.async_q.get()
-            print("Sending task: {}", task)
+            logger.debug("Sending task {}".format(task))
             await websocket.send(task)
-            print("Task sent. Awaitng rcv in consumer...")
-            result = await websocket.recv()
-            print("Consumer: ", result)
 
     def _websocket_thread(self):
         asyncio.set_event_loop(self.loop)
         self.loop.run_until_complete(self._websocket_loop())
 
     async def _websocket_loop(self):
-        cloudformation = boto3.resource('cloudformation')
-        stackname = config.get('cloudformation_stack')
-        stack = cloudformation.Stack(stackname)
-        API_URL = [x for x in stack.outputs if x['OutputKey'] == 'WebSocketURI'][0]['OutputValue']
-        print("Api URL: {}", API_URL)
-        async with websockets.connect(API_URL) as ws:
-            consumer_task = asyncio.ensure_future(self._websocket_consumer(ws))
-            producer_task = asyncio.ensure_future(self._websocket_producer(ws))
+        api_url = self.app.api_url
+        logger.info("Opening websocket connection to {}".format(api_url))
+        async with websockets.connect(api_url) as ws:
+            logger.info("Websocket connected")
+            consumer_task = asyncio.create_task(self._sender(ws))
+            producer_task = asyncio.create_task(self._receiver(ws))
             while True:
                 done, pending = await asyncio.wait([producer_task, consumer_task], return_when=asyncio.FIRST_COMPLETED)
                 # rethrow exceptions
