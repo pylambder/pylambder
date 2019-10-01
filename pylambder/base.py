@@ -29,10 +29,11 @@ class Pylambder:
     # websocket_hander: WebsocketHandler
 
     def __init__(self):
-        self.api_url = self._obtain_api_url()
-        self.tasks = dict()
-        self.websocket_hander = WebsocketHandler(self)
-        self.websocket_hander.run()
+        if not self._is_lambda():
+            self.api_url = self._obtain_api_url()
+            self.tasks = dict()
+            self.websocket_hander = WebsocketHandler(self)
+            self.websocket_hander.run()
 
     def task(self, f):
         """Function decorator turning it into CloudFunction. Named 'task'
@@ -46,3 +47,6 @@ class Pylambder:
         stackname = config.get('cloudformation_stack')
         stack = cloudformation.Stack(stackname)
         return [x for x in stack.outputs if x['OutputKey'] == 'WebSocketURI'][0]['OutputValue']
+
+    def _is_lambda(self):
+        return 'LAMBDA_TASK_ROOT' in os.environ
