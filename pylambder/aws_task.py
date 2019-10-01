@@ -7,6 +7,7 @@ import boto3
 import uuid
 from enum import IntEnum
 from pylambder import config
+from threading import Event
 
 TaskId = str
 
@@ -25,6 +26,7 @@ class CloudFunction:
         awstask = AWSTask(self, args, kwargs)
         self.app.tasks[awstask.id] = awstask
         self.app.websocket_hander.schedule(awstask)
+        return awstask
 
 
 class TaskStatus(IntEnum):
@@ -46,6 +48,12 @@ class AWSTask:
         self.args = call_args
         self.kwargs = call_kwargs
         self.result = None
+        self.done_flag = Event()
+
+    def wait(self, timeout=None):
+        if self.status in (TaskStatus.FAILED, TaskStatus.META_FAILED):
+            return None
+        self.done_flag.wait(timeout)
 
 
 def get_result_payload(request_id) -> str:

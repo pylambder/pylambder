@@ -46,12 +46,12 @@ class WebsocketHandler:
             task_status = aws_task.TaskStatus(int(decoded['status']))
             logger.info(F"Task {task_uuid} changed status to {task_status}")
             self.app.tasks[task_uuid].status = task_status
-        elif 'result' in decoded:
-            task_result = decoded['result']
-            task_status = aws_task.TaskStatus.FINISHED
-            logger.info(F"Task {task_uuid} changed status to {task_status} with result {task_result}")
-            self.app.tasks[task_uuid].status = task_status
-            self.app.tasks[task_uuid].result = task_result
+            if task_status in (aws_task.TaskStatus.FINISHED, aws_task.TaskStatus.FAILED):
+                task_result = decoded['result']
+                logger.info(F"Task {task_uuid} changed status to {task_status} with result {task_result}")
+                self.app.tasks[task_uuid].status = task_status
+                self.app.tasks[task_uuid].result = task_result
+                self.app.tasks[task_uuid].done_flag.set()
         else:
             logger.warn(F"Unexpected message: {msg}")
 
