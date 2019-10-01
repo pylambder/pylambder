@@ -10,12 +10,15 @@ _config = None
 
 def load(file):
     global _config
-    with open(CONFIG_FILE, "r") as f:
-        split = (line.split("=", 2) for line in f)
-        skipped = (s for s in split if len(s) == 2)  # skip lines without '='
-        stripped = ([w.strip() for w in words] for words in skipped)
+    try:
+        with open(CONFIG_FILE, "r") as f:
+            split = (line.split("=", 2) for line in f)
+            skipped = (s for s in split if len(s) == 2)  # skip lines without '='
+            stripped = ([w.strip() for w in words] for words in skipped)
+            _config = _config if _config else dict()
+            _config.update({k: v for [k, v] in stripped})
+    except:
         _config = _config if _config else dict()
-        _config.update({k: v for [k, v] in stripped})
 
 
 def get(key):
