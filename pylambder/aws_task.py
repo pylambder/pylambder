@@ -21,21 +21,11 @@ class CloudFunction:
     def run(self, *args, **kwargs):
         return self.f(*args, **kwargs)
 
-    def delay(self, ws_handler, *args, **kwargs):
-        payload = self.get_exeucte_payload(args, kwargs)
-        awstask = AWSTask(self)
+    def delay(self, *args, **kwargs):
+        awstask = AWSTask(self, args, kwargs)
         self.app.tasks[awstask.id] = awstask
-        self.app.websocket_hander.schedule(payload)
+        self.app.websocket_hander.schedule(awstask)
 
-    def get_exeucte_payload(self, args, kwargs) -> str:
-        payload_execute = {
-            'module': self.module,
-            'function': self.function,
-            'args': args,
-            'kwargs': kwargs,
-            'action': 'execute'
-        }
-        return json.dumps(payload_execute)
 
 
 class TaskStatus(Enum):
@@ -50,21 +40,12 @@ class TaskStatus(Enum):
 class AWSTask:
     """Instance of a CloudFunction invocation"""
 
-    def __init__(self, cloud_function: CloudFunction):
+    def __init__(self, cloud_function: CloudFunction, call_args, call_kwargs):
         self.function = cloud_function
         self.id = str(uuid.uuid4())
         self.status = TaskStatus.REQUESTED
-
-
-def get_exeucte_payload(module, function, args, kwargs) -> str:
-    payload_execute = {
-        'module': module,
-        'function': function,
-        'args': args,
-        'kwargs': kwargs,
-        'action': 'execute'
-    }
-    return json.dumps(payload_execute)
+        self.args = call_args
+        self.kwargs = call_kwargs
 
 
 def get_result_payload(request_id) -> str:

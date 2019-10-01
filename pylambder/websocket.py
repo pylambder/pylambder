@@ -61,4 +61,12 @@ class WebsocketHandler:
                 # (x.result() for x in done + pending)
 
     def schedule(self, aws_task):
-        self.queue.sync_q.put(aws_task)
+        payload = {
+            'action': 'execute',
+            'module': aws_task.function.module,
+            'function': aws_task.function.function,
+            'args': aws_task.args,
+            'kwargs': aws_task.kwargs,
+            'uuid': aws_task.id
+        }
+        self.queue.sync_q.put(json.dumps(payload))
