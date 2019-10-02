@@ -72,9 +72,12 @@ class AWSTask:
                 self.result = result
                 self.done_flag.set()
             else:
+                self.status = status
+                self.result = result
+                self.done_flag.set()
+
                 self.callback_thread = Thread(target=self.__invoke_callback, args=(status, result,))
                 self.callback_thread.setDaemon(True)
-                self.done_flag.set()
                 self.callback_thread.run()
         else:
             self.status = status
