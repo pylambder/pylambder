@@ -84,9 +84,12 @@ class AWSTask:
             self.result = result
             self.done_flag.set()
 
-    def get_result(self):
-        if self.status == TaskStatus.FINISHED:
+    def get_result(self, timeout: float = None):
+        if self.done_flag.wait(timeout):
             return self.result
+        else:
+            # TODO use pylambder exception - this one is related to system calls
+            raise TimeoutError()
 
     def wait(self, timeout=None):
         if self.status in (TaskStatus.FAILED, TaskStatus.META_FAILED):
