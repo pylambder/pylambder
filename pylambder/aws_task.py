@@ -1,16 +1,20 @@
-from functools import wraps
-import websockets
+import asyncio
 import inspect
 import json
-import asyncio
-import boto3
+import logging
 import uuid
 from enum import IntEnum
-from pylambder import config
+from functools import wraps
 from threading import Event, Thread
+
+import boto3
+import websockets
+
+from pylambder import config
 
 TaskId = str
 
+logger = logging.getLogger(__name__)
 
 class CloudFunction:
     def __init__(self, f, module, function, pylambder_app):
@@ -79,14 +83,19 @@ class AWSTask:
                 self.callback_thread = Thread(target=self.__invoke_callback, args=(status, result,))
                 self.callback_thread.setDaemon(True)
                 self.callback_thread.run()
-        else:
+        elif status == TaskStatus.FAILED:
             self.status = status
-            self.result = result
+            # create exception object which repr() we have
+            self.result = eval(result)
             self.done_flag.set()
 
     def get_result(self, timeout: float = None):
         if self.done_flag.wait(timeout):
-            return self.result
+            if self.status == TaskStatus.FINISHED:
+                return self.result
+            elif self.status == TaskStatus.FAILED:
+                # FIXME better way of rethrowing the exception
+                raise self.result
         else:
             # TODO use pylambder exception - this one is related to system calls
             raise TimeoutError()
