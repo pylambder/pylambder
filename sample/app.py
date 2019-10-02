@@ -19,15 +19,14 @@ logger.setLevel(logging.DEBUG)
 def myfunc(arg1, arg2):
     print("This will be printed in the cloud")
     logger.info("This will be logged in the cloud")
-    time.sleep(5)
-    #raise NameError("My name is not myfunc, for you it's mr. myfunc!")
+    time.sleep(3)
     print("Computation finished")
-    return {'sum': arg1 + arg2}
+    return {'div': arg1 / arg2}
 
 
 def test_callback(result):
-    print("Callback: {}".format(result['sum'] + 100))
-    return result['sum'] + 100
+    logger.info("Callback: {}".format(result['div'] + 100))
+    return result['div'] + 100
 
 
 if __name__ == '__main__':
@@ -37,7 +36,16 @@ if __name__ == '__main__':
     logger.info("Start task")
     task = myfunc.delay(1, 2).set_callback(test_callback)
     logger.warning("Before wait: {}".format(datetime.datetime.now().time()))
+    logger.warning("Result: {}".format(task.get_result()))
     logger.warning("After wait: {}".format(datetime.datetime.now().time()))
-    #logger.warning("Result: {}".format(task.get_result()))
+
+    time.sleep(4)
+    logger.warning("Now there will be exception")
+
+    task = myfunc.delay(2, 0).set_callback(test_callback)
+    logger.warning("Before wait: {}".format(datetime.datetime.now().time()))
+    logger.warning("Result: {}".format(task.get_result(timeout=10)))
+    logger.warning("After wait: {}".format(datetime.datetime.now().time()))
+
     time.sleep(10)
     logger.warning("Exiting")
