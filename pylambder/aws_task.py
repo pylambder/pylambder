@@ -4,17 +4,14 @@ import json
 import logging
 import uuid
 from enum import IntEnum
-from functools import wraps
 from threading import Event, Thread
-
-import boto3
-import websockets
 
 from pylambder import config
 
 TaskId = str
 
 logger = logging.getLogger(__name__)
+
 
 class CloudFunction:
     def __init__(self, f, module, function, pylambder_app):
@@ -97,7 +94,7 @@ class AWSTask:
                 # FIXME better way of rethrowing the exception
                 raise self.result
         else:
-            # TODO use pylambder exception - this one is related to system calls
+            # TODO use pylambder-defined exception - this one is related to system calls
             raise TimeoutError()
 
     def wait(self, timeout=None):

@@ -8,8 +8,7 @@ import boto3
 import janus
 import websockets
 
-from pylambder import config
-from pylambder import aws_task
+from pylambder import aws_task, config
 
 QUEUE_MAX_SIZE = 1000
 
@@ -17,8 +16,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WebsocketHandler:
-    """ This class handles websocket connection to AWS, manages sending request and response handling. 
-    When runned it will work in separate thread. Instantination of this class does not yet run the websocket connection."""
+    """ This class handles websocket connection to AWS, manages sending
+    request and response handling. When ran it will work in separate thread.
+    Instantination of this class does not yet run the websocket
+    connection."""
+
     def __init__(self, app=None):
         self.queue = None
         self.worker = None
@@ -26,7 +28,8 @@ class WebsocketHandler:
         self.app = app
 
     def run(self):
-        """Starts the websocket connection in separate thread with new asyncio event loop"""
+        """Starts the websocket connection in separate thread with new
+        asyncio event loop"""
         if self.started:
             raise Exception("Handler already running")
         else:
@@ -45,17 +48,18 @@ class WebsocketHandler:
             self.handle_message(msg)
 
     def handle_message(self, msg):
-        """Received message handling logic. This function will be invoked on all received messages."""
+        """Received message handling logic. This function will be invoked on
+        all received messages."""
         decoded = json.loads(msg)
         task_uuid = decoded['uuid']
         if 'status' in decoded:
             task_status = aws_task.TaskStatus(int(decoded['status']))
-            LOGGER.info(F"Task {task_uuid} changed status to {task_status}")
+            LOGGER.info(F"Task {task_uuid} changed status to {task_status.name}")
             self.app.tasks[task_uuid].status = task_status
             if task_status in (aws_task.TaskStatus.FINISHED, aws_task.TaskStatus.FAILED):
                 task_result = decoded['result']
-                LOGGER.info(F"""Task {task_uuid} changed status to {task_status}
-                             with result {task_result}""")
+                LOGGER.info(
+                    F"Task {task_uuid} changed status to {task_status.name} with result {task_result}")
                 self.app.tasks[task_uuid].handle_status_with_result(task_status, task_result)
                 del self.app.tasks[task_uuid]
         else:
@@ -84,7 +88,7 @@ class WebsocketHandler:
             producer_task = asyncio.create_task(self._receiver(websocket))
             while True:
                 await asyncio.wait([producer_task, consumer_task],
-                                                    return_when=asyncio.FIRST_COMPLETED)
+                                   return_when=asyncio.FIRST_COMPLETED)
 
     def schedule(self, task):
         """Schedules new task to be sent in the queue."""

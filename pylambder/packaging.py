@@ -1,10 +1,11 @@
 """Module responsible for packaging code and dependencies for upload"""
 
-from typing import List
-import tempfile
-import subprocess
-import shutil
 import os
+import shutil
+import subprocess
+import tempfile
+from typing import List
+
 from pylambder import APP_NAME
 
 
