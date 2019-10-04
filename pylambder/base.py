@@ -1,18 +1,13 @@
 """Defines the central class of Pylambder"""
 
 import inspect
-import logging
 import os
-from typing import Dict
 
 import boto3
 
-import pylambder.websocket
-from pylambder import aws_task, config
+from pylambder import config
 from pylambder.aws_task import CloudFunction
 from pylambder.websocket import WebsocketHandler
-
-logger = logging.getLogger(__name__)
 
 
 def getmodule(func) -> str:
@@ -35,18 +30,20 @@ class Pylambder:
             self.websocket_hander = WebsocketHandler(self)
             self.websocket_hander.run()
 
-    def task(self, f):
+    def task(self, function):
         """Function decorator turning it into CloudFunction. Named 'task'
         becuase of Celery"""
-        module = getmodule(f)
-        function = f.__name__
-        return CloudFunction(f, module, function, self)
+        module = getmodule(function)
+        function = function.__name__
+        return CloudFunction(function, module, function, self)
 
-    def _obtain_api_url(self):
+    @staticmethod
+    def _obtain_api_url():
         cloudformation = boto3.resource('cloudformation')
         stackname = config.get('cloudformation_stack')
         stack = cloudformation.Stack(stackname)
         return [x for x in stack.outputs if x['OutputKey'] == 'WebSocketURI'][0]['OutputValue']
 
-    def _is_lambda(self):
+    @staticmethod
+    def _is_lambda():
         return 'LAMBDA_TASK_ROOT' in os.environ
