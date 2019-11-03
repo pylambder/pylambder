@@ -8,7 +8,7 @@ import botocore
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.client('dynamodb')
 
 
 def lambda_handler(event, context):
@@ -16,12 +16,13 @@ def lambda_handler(event, context):
 
     request_context = event.get('requestContext', {})
 
-    data = json.loads(event.get('body', '{}')).get('data')
-    request_id = event.get('RequestId')
+    body = json.loads(event.get('body', '{}'))
+    request_id = body.get('RequestId')
     domain_name = request_context.get('domainName')
     stage = request_context.get('stage')
     connection_id = request_context.get('connectionId')
-    if (data and domain_name and stage and request_id and connection_id) is None:
+    if (body and stage and request_id and connection_id and domain_name) is None:
+        logger.warning("Bad request: {} and {} and {} and {} and {}".format(body, stage, request_id, connection_id, domain_name))
         return { 'statusCode': 400,
                  'body': 'bad request'}
 
@@ -35,7 +36,7 @@ def lambda_handler(event, context):
         result = results['Item']
         try:
             _ = apigw_management.post_to_connection(ConnectionId=connection_id,
-                                                         Data=result)
+                                                     Data=json.dumps({"result": json.loads(result['Result']['S'])}))
         except botocore.exceptions.ClientError as e:
             logger.debug('post_to_connection failed: %s' % e)
             return {'statusCode': 500,
