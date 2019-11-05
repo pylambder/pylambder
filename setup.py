@@ -7,6 +7,7 @@ https://github.com/pypa/sampleproject
 """
 
 from setuptools import setup, find_packages
+import os
 from os import path
 
 here = path.abspath(path.dirname(__file__))
@@ -22,6 +23,14 @@ with open('pylambder/__init__.py', 'r') as f:
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
+
+
+def files_in_dir(relative_to, directory):
+    result = []
+    for dirpath, _subdirs, files in os.walk(path.join(relative_to, directory)):
+        result += [path.relpath(path.join(dirpath, f), relative_to) for f in files]
+    return result
+
 
 setup(
     name='pylambder',  # Required
@@ -98,5 +107,9 @@ setup(
     extras_require={  # Optional
         'dev': ['pylint'],
         'test': [],
+    },
+
+    package_data={
+        'pylambder': files_in_dir('pylambder', 'sam-data')
     },
 )
