@@ -24,6 +24,7 @@ class WebsocketHandler:
     def __init__(self, app=None):
         self.queue = None
         self.worker = None
+        self.loop = None
         self.started = False
         self.app = app
 
