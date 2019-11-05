@@ -112,4 +112,10 @@ setup(
     package_data={
         'pylambder': files_in_dir('pylambder', 'sam-data')
     },
+
+    entry_points={
+        'console_scripts': [
+            'pylambder=pylambder.cli:main'
+        ]
+    }
 )
