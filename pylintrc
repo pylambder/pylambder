@@ -141,7 +141,7 @@ disable=print-statement,
         exception-escape,
         comprehension-escape,
         logging-format-interpolation,
-        logging-fstring-interpolation
+        logging-fstring-interpolation,
         too-few-public-methods
 
 # Enable the message, report, category or checker with the given id(s). You can
