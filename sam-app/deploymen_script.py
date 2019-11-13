@@ -15,8 +15,7 @@ def changeSetStatus(change_set_name, client):
 # Create change set
 cs_response = client.create_change_set(
   StackName=stackname,
-  TemplateBody=""" 
-  AWSTemplateFormatVersion: "2010-09-09"
+  TemplateBody="""AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   sam-app
@@ -129,7 +128,7 @@ Resources:
     Properties:
       CodeUri: onconnect/
       Handler: handler.lambda_handler
-      MemorySize: &memory-size 256
+      MemorySize: 256
       Runtime: python3.7
 
   OnConnectPermission:
@@ -170,7 +169,7 @@ Resources:
     Properties:
       CodeUri: ondisconnect/
       Handler: handler.lambda_handler
-      MemorySize: *memory-size
+      MemorySize: 256
       Runtime: python3.7
 
   OnDisconnectPermission:
@@ -211,7 +210,7 @@ Resources:
     Properties:
       CodeUri: taskexecute/
       Handler: handler.lambda_handler
-      MemorySize: *memory-size
+      MemorySize: 256
       Runtime: python3.7
       Environment:
         Variables:
@@ -267,7 +266,7 @@ Resources:
     Properties:
       CodeUri: taskresult/
       Handler: handler.lambda_handler
-      MemorySize: *memory-size
+      MemorySize: 256
       Runtime: python3.7
       Environment:
         Variables:
