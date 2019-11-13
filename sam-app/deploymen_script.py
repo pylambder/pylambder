@@ -1,3 +1,6 @@
+import time
+import boto3
+
 client = boto3.client('cloudformation')
 
 stackname = ""
@@ -353,7 +356,7 @@ change_set_name = cs_response['Id']
 
 # Wait until change set status is CREATE_COMPLETE
 while True:
-  response = change_set_status(change_set_name, client)
+  response = changeSetStatus(change_set_name, client)
   print(str(response))
   time.sleep(10)
   if response == 'CREATE_COMPLETE':
