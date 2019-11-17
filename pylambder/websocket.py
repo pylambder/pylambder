@@ -96,7 +96,7 @@ class WebsocketHandler:
         payload = {
             'action': 'execute',
             'module': task.function.module,
-            'function': task.function.function,
+            'function': task.function.function_name,
             'args': task.args,
             'kwargs': task.kwargs,
             'uuid': task.id
