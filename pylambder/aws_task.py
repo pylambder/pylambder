@@ -5,6 +5,7 @@ import logging
 import uuid
 from enum import IntEnum
 from threading import Event, Thread
+from typing import Callable
 
 from pylambder import config
 
@@ -14,14 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 class CloudFunction:
-    def __init__(self, f, module, function, pylambder_app):
+    def __init__(self, function: Callable, module, function_name, pylambder_app):
         self.module = module
+        self.function_name = function_name
         self.function = function
-        self.f = f
         self.app = pylambder_app
 
     def run(self, *args, **kwargs):
-        return self.f(*args, **kwargs)
+        return self.function(*args, **kwargs)
 
     def delay(self, *args, **kwargs):
         awstask = AWSTask(self, args, kwargs)
