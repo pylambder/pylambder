@@ -109,7 +109,8 @@ setup(
     },
 
     package_data={
-        'pylambder': files_in_dir('pylambder', 'sam-data')
+        'pylambder': files_in_dir('pylambder', 'sam-data') + \
+            files_in_dir('pylambder', 'packaged')
     },
 
     entry_points={

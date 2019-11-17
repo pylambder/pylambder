@@ -31,12 +31,6 @@ lambda-layers/project-layer.zip: $(wildcard ../sample/*.py) $(wildcard ../pylamb
 	./make-project-layer.sh ../sample $@
 	rm -rf ../sample/pylambder
 
-function_zips: onconnect.zip ondisconnect.zip taskexecute.zip taskresult.zip
-
-%.zip: %
-	cd $< && zip -FSr ../$@ ./
-	
-
 .ALWAYS_REBUILD:
 	
 
