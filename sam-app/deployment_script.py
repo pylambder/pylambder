@@ -7,7 +7,7 @@ client = boto3.client('cloudformation')
 s3_client = boto3.client('s3')
 
 BUCKET = 'wgeisler-sam'
-stackname = "new-stack4"
+stackname = "new-stack"
 templateurl = ""
 params = []
 capabilities = "CAPABILITY_IAM"
@@ -27,7 +27,7 @@ def upload_functions():
   """Expects functions zips to exist"""
   for fun in function_names:
     file_name = F'{fun}.zip'
-    print("Uploding {} to s3".format(file_name))
+    print("Uploading {} to s3".format(file_name))
     s3_client.upload_file(str(file_name), BUCKET, file_name)
 
 def upload_layers():
@@ -35,7 +35,7 @@ def upload_layers():
   for layer in layer_names:
     file_name = F'{layer}.zip'
     file_path = Path('lambda-layers') / file_name
-    print("Uploding {} to s3".format(file_name))
+    print("Uploading {} to s3".format(file_name))
     s3_client.upload_file(str(file_path), BUCKET, file_name)
 
 
@@ -78,6 +78,8 @@ def main():
     ChangeSetName=change_set_name
   )
   print("Execute change set reponse:", ex_response)
+
+    ## TODO wait for changeset to finish
 
 if __name__ == '__main__':
   main()
