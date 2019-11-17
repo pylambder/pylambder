@@ -69,9 +69,6 @@ def upload_if_missing(path) -> Uri:
 
 
 
-
-
-
 def upload_functions() -> List[Uri]:
     """Expects functions zips to exist"""
     uris = dict()
@@ -94,11 +91,10 @@ def upload_layers() -> List[Uri]:
 def stack_exists(name) -> bool:
     try:
         stack = cf_resource.Stack(name)
-        print("stack: ", stack)
-        stack.load()
-        print("loaded: ", stack, stack.stack_status)
-        # Empty stack with state REVIEW_IN_PROGRESS when change set is created.
-        # It is not deemed existing for the purposes of CREATE/UPDATE changeset distinction.
+
+        # Empty stack with state REVIEW_IN_PROGRESS appears when change set is
+        # created. It is not deemed existing for the purposes of CREATE/UPDATE
+        # changeset distinction.
         return stack.stack_status != 'REVIEW_IN_PROGRESS'
     except ClientError as ex:
         print("Client error: ", ex)

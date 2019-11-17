@@ -4,7 +4,7 @@ import os
 import zipfile
 import tempfile
 
-import pylambder.packaging as packaging
+import pylambder.packaging.packaging as packaging
 
 
 class TestPackaging(unittest.TestCase):
