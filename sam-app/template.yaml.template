@@ -47,7 +47,7 @@ Resources:
     Properties:
       LayerName: MainLayer
       Description: Lambda layer with correct boto version ...
-      ContentUri: lambda-layers/dependencies-layer.zip
+      ContentUri: {dependencies-layer}
       CompatibleRuntimes:
         - python3.7
       LicenseInfo: MIT
@@ -58,7 +58,7 @@ Resources:
     Properties:
       LayerName: ProjectLayer
       Description: Lambda layer with task functions
-      ContentUri: lambda-layers/project-layer.zip
+      ContentUri: {project-layer}
       CompatibleRuntimes:
         - python3.7
       LicenseInfo: MIT

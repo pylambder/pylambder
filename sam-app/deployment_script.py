@@ -1,17 +1,19 @@
 import time
 import boto3
 import sys
+from pathlib import Path
 
 client = boto3.client('cloudformation')
 s3_client = boto3.client('s3')
 
 BUCKET = 'wgeisler-sam'
-stackname = ""
+stackname = "new-stack4"
 templateurl = ""
 params = []
 capabilities = "CAPABILITY_IAM"
 template_body_format_str = open('template.yaml.template', 'r').read()
 function_names = ['onconnect', 'ondisconnect', 'taskexecute', 'taskresult']
+layer_names = ['dependencies-layer', 'project-layer']
 
 # Helper function to retrieve change set status
 def changeSetStatus(change_set_name, client):
@@ -26,7 +28,15 @@ def upload_functions():
   for fun in function_names:
     file_name = F'{fun}.zip'
     print("Uploding {} to s3".format(file_name))
-    s3_client.upload_file(file_name, BUCKET, file_name)
+    s3_client.upload_file(str(file_name), BUCKET, file_name)
+
+def upload_layers():
+  # @TODO: reuse existing
+  for layer in layer_names:
+    file_name = F'{layer}.zip'
+    file_path = Path('lambda-layers') / file_name
+    print("Uploding {} to s3".format(file_name))
+    s3_client.upload_file(str(file_path), BUCKET, file_name)
 
 
 def main():
@@ -34,8 +44,9 @@ def main():
   print("Creating change set...")
 
   upload_functions()
+  upload_layers()
 
-  uris = {fun: F's3://{BUCKET}/{fun}' for fun in function_names}
+  uris = {name: F's3://{BUCKET}/{name}.zip' for name in function_names + layer_names}
   print(uris)
   template_body = template_body_format_str.format(**uris)
   print(template_body)
@@ -59,7 +70,7 @@ def main():
         break
     if response == 'FAILED':
         sys.exit(1)
-    time.sleep(10)
+    time.sleep(5)
 
   # Execute change set
   print("Executing change set...")
