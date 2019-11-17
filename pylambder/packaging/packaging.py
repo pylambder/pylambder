@@ -25,6 +25,7 @@ def create_packages_archive(target_path: str, package_specs: List[str]) -> None:
     prefix = 'python/lib/python3.7/site-packages/'
     with tempfile.TemporaryDirectory(prefix=APP_NAME + "-") as tempdir:
         installation_dir = os.path.join(tempdir, prefix)
+        # TODO perhaps use `pip download` rather than `pip install`
         pip_command = ['pip', 'install', '-t', installation_dir] + package_specs
         subprocess.check_call(pip_command)
 
