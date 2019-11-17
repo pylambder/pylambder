@@ -34,8 +34,8 @@ class Pylambder:
         """Function decorator turning it into CloudFunction. Named 'task'
         becuase of Celery"""
         module = getmodule(function)
-        function = function.__name__
-        return CloudFunction(function, module, function, self)
+        function_name = function.__name__
+        return CloudFunction(function, module, function_name, self)
 
     @staticmethod
     def _obtain_api_url():
