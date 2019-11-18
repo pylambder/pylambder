@@ -22,16 +22,14 @@ def create_packages_archive(target_path: str, package_specs: List[str]) -> None:
         version restrictions
     """
 
-    if not package_specs:
-        raise ValueError("Dependencies list must be nonempty")
-
     # @TODO make python version customizable
     prefix = 'python/lib/python3.7/site-packages/'
     with tempfile.TemporaryDirectory(prefix=APP_NAME + "-") as tempdir:
         installation_dir = os.path.join(tempdir, prefix)
         # TODO perhaps use `pip download` rather than `pip install`
-        pip_command = ['pip', 'install', '-t', installation_dir] + package_specs
-        subprocess.check_call(pip_command)
+        if package_specs:
+            pip_command = ['pip', 'install', '-t', installation_dir] + package_specs
+            subprocess.check_call(pip_command)
 
         with zipfile.ZipFile(target_path, mode='w') as zf:
             _recursive_zip_write(zf, Path(tempdir), Path(tempdir))
@@ -47,6 +45,9 @@ def create_project_archive(target_path: PathOrString, base_path: PathOrString,
     :param base_path: common root for the packaged files
     :param project_dirs: list of directories to put in the archive
     """
+
+    # TODO Allow filtering files e.g. to skip .pyc
+
     base_path = Path(base_path)
     with zipfile.ZipFile(target_path, mode='w') as zf:
         for dir in project_dirs:

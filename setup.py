@@ -31,7 +31,6 @@ def files_in_dir(relative_to, directory):
         result += [path.relpath(path.join(dirpath, f), relative_to) for f in files]
     return result
 
-
 setup(
     name='pylambder',  # Required
 
