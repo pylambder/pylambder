@@ -10,6 +10,19 @@ import pylambder.packaging.packaging as packaging
 
 class TestPackaging(unittest.TestCase):
 
+    def test_empty_dependencies_create_empty_archive(self):
+        with tempfile.TemporaryDirectory() as dir:
+            archive_path = os.path.join(dir, "archive.zip")
+            deps = []
+            packaging.create_packages_archive(archive_path, deps)
+
+            self.assertTrue(os.path.isfile(archive_path))
+            zip = zipfile.ZipFile(archive_path)
+
+            self.assertEqual([], zip.namelist())
+
+
+
     def test_dependencies_archive_creation(self):
         def pip_mock(command):
             self.assertEqual(['pip', 'install', '-t'],  command[0:3])
