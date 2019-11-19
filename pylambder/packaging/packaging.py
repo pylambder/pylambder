@@ -36,7 +36,7 @@ def create_packages_archive(target_path: str, package_specs: List[str]) -> None:
 
 
 def create_project_archive(target_path: PathOrString, base_path: PathOrString,
-                           project_dirs: PathOrString):
+                           project_dirs: List[PathOrString], ignored: List[PathOrString] = None):
     """Obtains specified packages and puts them in a zip file
     ready to by uploaded to AWS
 
@@ -44,22 +44,41 @@ def create_project_archive(target_path: PathOrString, base_path: PathOrString,
         suffix
     :param base_path: common root for the packaged files
     :param project_dirs: list of directories to put in the archive
+    :param ignored: List of directory and file paths, relative to base_path,
+        which should not be present in the result archvie (nor their children)
     """
 
     # TODO Allow filtering files e.g. to skip .pyc
+    if ignored is None:
+        ignored = []
 
     base_path = Path(base_path)
     with zipfile.ZipFile(target_path, mode='w') as zf:
         for dir in project_dirs:
-            _recursive_zip_write(zf, Path(base_path), Path(dir), PREFIX)
+            _recursive_zip_write(zf, Path(base_path), Path(dir), PREFIX, ignored)
 
 
-def _recursive_zip_write(zf: zipfile.ZipFile, relative_to: Path, dir: Path, common_prefix='.'):
+def _recursive_zip_write(zf: zipfile.ZipFile, relative_to: Path, dir: Path,
+                         common_prefix='.', ignored=None):
+    if ignored is None:
+        ignored = []
+    ignored = [PurePath(i) for i in ignored]
     common_prefix = PurePath(common_prefix)
+
     for dirpath, subdirs, subfiles in os.walk(relative_to / dir):
         dirpath = Path(dirpath)
 
         for subdir in sorted(subdirs + subfiles):
             full_path = dirpath / subdir
-            packaged_path = common_prefix / full_path.relative_to(relative_to)
-            zf.write(full_path, packaged_path)
+            packaged_path = full_path.relative_to(relative_to)
+            if not any(is_subpath(packaged_path, i) for i in ignored):
+                zf.write(full_path, common_prefix / packaged_path)
+
+
+def is_subpath(sub: PathOrString, ancestor: PathOrString) -> bool:
+    """Retunrs True if sub is equal to ancestor or its subpath"""
+    try:
+        PurePath(sub).relative_to(PurePath(ancestor))
+        return True
+    except ValueError:
+        return False
