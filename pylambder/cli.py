@@ -1,7 +1,13 @@
+import logging
 import sys
+
 import pylambder.packaging.deployment as deployment
 
+
 def main():
+    pylambder_logger = logging.getLogger('pylambder')
+    pylambder_logger.setLevel(logging.DEBUG)
+
     if len(sys.argv) < 2 or sys.argv[1] in ['help', '-h', '--help']:
         print("The CLI pylambder interface.")
         print("Available commands:\n")

@@ -59,9 +59,11 @@ class TestPackaging(unittest.TestCase):
 
             filenames = ['setup.py', 'pack1/app.py', 'pack1/utils.py',
                          'pack1/subpackage/code.py', 'pack2/code.py']
-            _create_files(workdir, filenames)
+            ignored_filenames = ['build/project.zip', 'pack1/ignored']
+            ignored = ['build', 'pack1/ignored']
+            _create_files(workdir, filenames + ignored_filenames)
 
-            packaging.create_project_archive(archive_path, workdir, [workdir])
+            packaging.create_project_archive(archive_path, workdir, [workdir], ignored)
 
             self.assertTrue(archive_path.is_file(), f'{archive_path} is not a file')
             zip = zipfile.ZipFile(archive_path)
@@ -69,6 +71,8 @@ class TestPackaging(unittest.TestCase):
             files_in_zip = zip.namelist()
             for file in filenames:
                 self.assertIn('python/lib/python3.7/site-packages/' + file, files_in_zip)
+            for file in ignored_filenames:
+                self.assertNotIn('python/lib/python3.7/site-packages/' + file, files_in_zip)
 
     def test_archving_selected_project_dirs(self):
         with tempfile.TemporaryDirectory() as workdir:
@@ -78,10 +82,10 @@ class TestPackaging(unittest.TestCase):
             filenames = ['pack1/app.py', 'pack1/utils.py',
                          'pack1/subpackage/code.py', 'pack2/code.py']
             in_archive_filenames = ['python/lib/python3.7/site-packages/' + f for f in filenames]
-            ignored_filenames = ['static/abc.js', 'pack3/py.py']
-            in_archive_ignored = [
-                'python/lib/python3.7/site-packages/' + f for f in ignored_filenames]
-            _create_files(workdir, filenames + ignored_filenames)
+            outside_filenames = ['static/abc.js', 'pack3/py.py']
+            in_archive_outside = [
+                'python/lib/python3.7/site-packages/' + f for f in outside_filenames]
+            _create_files(workdir, filenames + outside_filenames)
 
             packaging.create_project_archive(archive_path, workdir, ['pack1', 'pack2'])
 
@@ -91,8 +95,8 @@ class TestPackaging(unittest.TestCase):
             files_in_zip = zip.namelist()
             for file in in_archive_filenames:
                 self.assertIn(file, files_in_zip)
-            for ignored in in_archive_ignored:
-                self.assertNotIn(ignored, files_in_zip)
+            for outside in in_archive_outside:
+                self.assertNotIn(outside, files_in_zip)
 
 
 def _is_name_in_zip(name: str, zip_file: zipfile.ZipFile) -> bool:

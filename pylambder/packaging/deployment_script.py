@@ -70,7 +70,7 @@ def upload_if_missing(path) -> Uri:
 
 
 def upload_functions() -> List[Uri]:
-    """Expects functions zips to exist"""
+    """Expects functions zips to exist""config
     uris = dict()
     for fun in function_names:
         file_name = F'{fun}.zip'

@@ -30,7 +30,7 @@ def test_callback(result):
 
 
 if __name__ == '__main__':
-    pylambder_logger = logging.getLogger('pylambder')
+    pylambder_logger = logging.getLogger('packaging')
     pylambder_logger.setLevel(logging.DEBUG)
 
     logger.info("Start task")
