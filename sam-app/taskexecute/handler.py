@@ -100,7 +100,6 @@ def store_state(state, request_id, uuid, result=None):
         result_json = json.dumps(result)
         stateData['Result'] = {'S': result_json}
 
-
     dynamodb = boto3.client('dynamodb')
     logger.debug("Storing call result")
     dynamodb.put_item(TableName=os.environ['TABLE_NAME'], Item=stateData)

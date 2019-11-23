@@ -3,13 +3,25 @@ from unittest.mock import patch
 import os
 import zipfile
 import tempfile
+from pathlib import Path
 
-import pylambder.packaging as packaging
+import pylambder.packaging.packaging as packaging
 
 
 class TestPackaging(unittest.TestCase):
 
-    def test_archive_creation(self):
+    def test_empty_dependencies_create_empty_archive(self):
+        with tempfile.TemporaryDirectory() as dir:
+            archive_path = os.path.join(dir, "archive.zip")
+            deps = []
+            packaging.create_packages_archive(archive_path, deps)
+
+            self.assertTrue(os.path.isfile(archive_path))
+            zip = zipfile.ZipFile(archive_path)
+
+            self.assertEqual(['PYLAMBDER_EMPTY'], zip.namelist())
+
+    def test_dependencies_archive_creation(self):
         def pip_mock(command):
             self.assertEqual(['pip', 'install', '-t'],  command[0:3])
             dir = command[3]
@@ -24,24 +36,75 @@ class TestPackaging(unittest.TestCase):
         with patch('subprocess.check_call', side_effect=pip_mock) as mock_call:
 
             with tempfile.TemporaryDirectory() as dir:
-                archive_path = os.path.join(dir, "archive")
-                archive_path_with_ext = archive_path + ".zip"
+                archive_path = os.path.join(dir, "archive.zip")
                 deps = ["somepackage", "otherpackage"]
                 packaging.create_packages_archive(archive_path, deps)
 
-                self.assertTrue(os.path.isfile(archive_path_with_ext))
+                self.assertTrue(os.path.isfile(archive_path))
+                zip = zipfile.ZipFile(archive_path)
 
-                zip = zipfile.ZipFile(archive_path_with_ext)
+                expected = [
+                    "python/lib/python3.7/site-packages/somepackage/",
+                    "python/lib/python3.7/site-packages/somepackage/stub",
+                    "python/lib/python3.7/site-packages/otherpackage/",
+                    "python/lib/python3.7/site-packages/otherpackage/stub",
+                ]
+                for exp in expected:
+                    self.assertIn(exp, zip.namelist())
 
-                self.assertTrue(_is_name_in_zip(
-                    "python/lib/python3.7/site-packages/somepackage/", zip))
-                self.assertTrue(_is_name_in_zip(
-                    "python/lib/python3.7/site-packages/somepackage/stub", zip))
-                self.assertTrue(_is_name_in_zip(
-                    "python/lib/python3.7/site-packages/otherpackage/", zip))
-                self.assertTrue(_is_name_in_zip(
-                    "python/lib/python3.7/site-packages/otherpackage/stub", zip))
+    def test_archving_whole_project(self):
+        with tempfile.TemporaryDirectory() as workdir, \
+                tempfile.NamedTemporaryFile(suffix='.zip') as archive_file:
+            archive_path = Path(archive_file.name)
+
+            filenames = ['setup.py', 'pack1/app.py', 'pack1/utils.py',
+                         'pack1/subpackage/code.py', 'pack2/code.py']
+            ignored_filenames = ['build/project.zip', 'pack1/ignored']
+            ignored = ['build', 'pack1/ignored']
+            _create_files(workdir, filenames + ignored_filenames)
+
+            packaging.create_project_archive(archive_path, workdir, [workdir], ignored)
+
+            self.assertTrue(archive_path.is_file(), f'{archive_path} is not a file')
+            zip = zipfile.ZipFile(archive_path)
+
+            files_in_zip = zip.namelist()
+            for file in filenames:
+                self.assertIn('python/lib/python3.7/site-packages/' + file, files_in_zip)
+            for file in ignored_filenames:
+                self.assertNotIn('python/lib/python3.7/site-packages/' + file, files_in_zip)
+
+    def test_archving_selected_project_dirs(self):
+        with tempfile.TemporaryDirectory() as workdir:
+            dirpath = Path(workdir)
+            archive_path = dirpath / 'archive.zip'
+
+            filenames = ['pack1/app.py', 'pack1/utils.py',
+                         'pack1/subpackage/code.py', 'pack2/code.py']
+            in_archive_filenames = ['python/lib/python3.7/site-packages/' + f for f in filenames]
+            outside_filenames = ['static/abc.js', 'pack3/py.py']
+            in_archive_outside = [
+                'python/lib/python3.7/site-packages/' + f for f in outside_filenames]
+            _create_files(workdir, filenames + outside_filenames)
+
+            packaging.create_project_archive(archive_path, workdir, ['pack1', 'pack2'])
+
+            self.assertTrue(archive_path.is_file(), f'{archive_path} is not a file')
+            zip = zipfile.ZipFile(archive_path)
+
+            files_in_zip = zip.namelist()
+            for file in in_archive_filenames:
+                self.assertIn(file, files_in_zip)
+            for outside in in_archive_outside:
+                self.assertNotIn(outside, files_in_zip)
 
 
 def _is_name_in_zip(name: str, zip_file: zipfile.ZipFile) -> bool:
     return name in zip_file.namelist()
+
+
+def _create_files(root: Path, files: [str]):
+    for file in files:
+        filepath = Path(file)
+        os.makedirs(root / filepath.parent, exist_ok=True)
+        (root / filepath).touch()

@@ -21,7 +21,7 @@ class Pylambder:
     """Like Celery"""
 
     # tasks: Dict[aws_task.TaskId, aws_task.AWSTask]
-    # websocket_hander: WebsocketHandler
+    # websocket_handler: WebsocketHandler
 
     def __init__(self):
         if not self._is_lambda():
@@ -32,7 +32,7 @@ class Pylambder:
 
     def task(self, function):
         """Function decorator turning it into CloudFunction. Named 'task'
-        becuase of Celery"""
+        because of Celery"""
         module = getmodule(function)
         function_name = function.__name__
         return CloudFunction(function, module, function_name, self)

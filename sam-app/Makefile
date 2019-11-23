@@ -30,7 +30,6 @@ lambda-layers/project-layer.zip: $(wildcard ../sample/*.py) $(wildcard ../pylamb
 	cp -a ../pylambder ../sample/
 	./make-project-layer.sh ../sample $@
 	rm -rf ../sample/pylambder
-	
 
 .ALWAYS_REBUILD:
 	

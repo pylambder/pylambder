@@ -7,6 +7,7 @@ https://github.com/pypa/sampleproject
 """
 
 from setuptools import setup, find_packages
+import os
 from os import path
 
 here = path.abspath(path.dirname(__file__))
@@ -22,6 +23,13 @@ with open('pylambder/__init__.py', 'r') as f:
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
+
+
+def files_in_dir(relative_to, directory):
+    result = []
+    for dirpath, _subdirs, files in os.walk(path.join(relative_to, directory)):
+        result += [path.relpath(path.join(dirpath, f), relative_to) for f in files]
+    return result
 
 setup(
     name='pylambder',  # Required
@@ -57,7 +65,6 @@ setup(
         'License :: OSI Approved :: MIT License',
 
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
 
@@ -80,7 +87,7 @@ setup(
     # and refuse to install the project if the version does not match. If you
     # do not support Python 2, you can simplify this to '>=3.5' or similar, see
     # https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
-    python_requires='>= 3.6, <4',
+    python_requires='>= 3.7, <4',
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
@@ -88,7 +95,11 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['boto3>=1.9.210'],  # Optional
+    install_requires=[
+        'boto3>=1.9.210',
+        'websockets==8.0.2',
+        'janus==0.4.0',
+    ],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
@@ -99,4 +110,15 @@ setup(
         'dev': ['pylint'],
         'test': [],
     },
+
+    package_data={
+        'pylambder': files_in_dir('pylambder', 'sam-data') + \
+            files_in_dir('pylambder', 'packaged')
+    },
+
+    entry_points={
+        'console_scripts': [
+            'pylambder=pylambder.cli:main'
+        ]
+    }
 )
