@@ -2,7 +2,8 @@ import logging
 import sys
 
 import pylambder.packaging.deployment as deployment
-
+import pylambder.configuration.configuration as configuration
+import pylambder.config as config
 
 
 
@@ -22,5 +23,10 @@ def main():
         deployment.package(app_path)
 
     elif sys.argv[1] == 'deploy':
+        config.load_config()
         app_path = sys.argv[2] if len(sys.argv) >= 3 else '.'
         deployment.deploy(app_path)
+
+    elif sys.argv[1] == 'config':
+        app_path = sys.argv[2] if len(sys.argv) >= 3 else '.'
+        configuration.generate_config_template(app_path)

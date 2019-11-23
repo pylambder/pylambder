@@ -37,7 +37,7 @@ def deploy(application_dir='.'):
     os.makedirs(application_dir / ARTIFACTS_DIR, exist_ok=True)
 
     package(application_dir)
-    _deploy(application_dir, config.get('s3bucket'), config.get('cloudformation_stack'))
+    _deploy(application_dir, config.S3BUCKET, config.CLOUDFORMATION_STACK)
     logger.info("AWS deployment finished.")
 
 

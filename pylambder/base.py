@@ -25,6 +25,7 @@ class Pylambder:
 
     def __init__(self):
         if not self._is_lambda():
+            config.load_config()
             self.api_url = self._obtain_api_url()
             self.tasks = dict()
             self.websocket_hander = WebsocketHandler(self)
@@ -40,7 +41,7 @@ class Pylambder:
     @staticmethod
     def _obtain_api_url():
         cloudformation = boto3.resource('cloudformation')
-        stackname = config.get('cloudformation_stack')
+        stackname = config.CLOUDFORMATION_STACK
         stack = cloudformation.Stack(stackname)
         return [x for x in stack.outputs if x['OutputKey'] == 'WebSocketURI'][0]['OutputValue']
 
