@@ -21,7 +21,7 @@ class Pylambder:
     """Like Celery"""
 
     # tasks: Dict[aws_task.TaskId, aws_task.AWSTask]
-    # websocket_hander: WebsocketHandler
+    # websocket_handler: WebsocketHandler
 
     def __init__(self):
         if not self._is_lambda():

@@ -48,7 +48,7 @@ def create_project_archive(target_path: PathOrString, base_path: PathOrString,
         which should not be present in the result archvie (nor their children)
     """
 
-    # TODO Allow filtering files e.g. to skip .pyc
+    # TODO Allow filtering files by glob, e.g. '*.pyc'
     if ignored is None:
         ignored = []
 
@@ -76,7 +76,8 @@ def _recursive_zip_write(zf: zipfile.ZipFile, relative_to: Path, dir: Path,
 
 
 def is_subpath(sub: PathOrString, ancestor: PathOrString) -> bool:
-    """Retunrs True if sub is equal to ancestor or its subpath"""
+    """Returns True if sub is equal to ancestor or its subpath"""
+    print(f"is {sub} subpath of {ancestor}")
     try:
         PurePath(sub).relative_to(PurePath(ancestor))
         return True

@@ -4,7 +4,10 @@ import sys
 import pylambder.packaging.deployment as deployment
 
 
+
+
 def main():
+    logging.basicConfig()
     pylambder_logger = logging.getLogger('pylambder')
     pylambder_logger.setLevel(logging.DEBUG)
 
@@ -13,6 +16,10 @@ def main():
         print("Available commands:\n")
         print("{:<10s} Upload the pylambder and user code to AWS".format('deploy'))
         sys.exit(0)
+
+    elif sys.argv[1] == 'package':
+        app_path = sys.argv[2] if len(sys.argv) >= 3 else '.'
+        deployment.package(app_path)
 
     elif sys.argv[1] == 'deploy':
         app_path = sys.argv[2] if len(sys.argv) >= 3 else '.'
