@@ -21,20 +21,24 @@ def myfunc(arg1, arg2):
     logger.info("This will be logged in the cloud")
     time.sleep(3)
     print("Computation finished")
-    return {'div': arg1 / arg2}
+    return {'sum': arg1 + arg2}
 
 
 def test_callback(result):
-    logger.info("Callback: {}".format(result['div'] + 100))
-    return result['div'] + 100
+    logger.info("Callback: {}".format(result['sum'] + 100))
+    return result['sum'] + 100
 
 
 if __name__ == '__main__':
     pylambder_logger = logging.getLogger('packaging')
     pylambder_logger.setLevel(logging.DEBUG)
 
-    logger.info("Start task")
+    logger.info("Start task ----------------------------------------")
+    #time.sleep(15)
     task = myfunc.delay(1, 2).set_callback(test_callback)
+    myfunc.delay(5,6)
+    myfunc.delay(7,8)
+    myfunc.delay(9,10)   
     logger.warning("Before wait: {}".format(datetime.datetime.now().time()))
     logger.warning("Result: {}".format(task.get_result()))
     logger.warning("After wait: {}".format(datetime.datetime.now().time()))
@@ -44,7 +48,7 @@ if __name__ == '__main__':
 
     task = myfunc.delay(2, 0).set_callback(test_callback)
     logger.warning("Before wait: {}".format(datetime.datetime.now().time()))
-    logger.warning("Result: {}".format(task.get_result(timeout=10)))
+    logger.warning("Result: {}".format(task.get_result(timeout=1000)))
     logger.warning("After wait: {}".format(datetime.datetime.now().time()))
 
     time.sleep(10)
