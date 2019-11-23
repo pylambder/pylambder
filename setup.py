@@ -47,7 +47,7 @@ setup(
     long_description_content_type='text/markdown',
     # url='https://github.com/pypa/sampleproject',  # Optional
     author='Wojciech Geisler, Artur Jopek',  # Optional
-    # author_email='pypa-dev@googlegroups.com',  # Optional
+    author_email='wojciech.geisler@gmail.com',  # Optional
 
     # Classifiers help users find your project by categorizing it.
     #

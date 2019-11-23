@@ -24,7 +24,6 @@ def create_packages_archive(target_path: str, package_specs: List[str]) -> None:
         version restrictions
     """
 
-    # @TODO make python version customizable
     with tempfile.TemporaryDirectory(prefix=APP_NAME + "-") as tempdir:
         # TODO perhaps use `pip download` rather than `pip install`
         with zipfile.ZipFile(target_path, mode='w') as zf:

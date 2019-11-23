@@ -9,6 +9,10 @@ test:
 wheel: packaged
 	$(PYTHON) setup.py bdist_wheel
 
+.PHONY: sdist
+sdist: packaged
+	$(PYTHON) setup.py sdist
+
 .PHONY: packaged
 packaged: onconnect.zip ondisconnect.zip taskexecute.zip taskresult.zip
 
