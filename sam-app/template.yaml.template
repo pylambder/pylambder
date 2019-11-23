@@ -278,38 +278,6 @@ Resources:
       Principal: apigateway.amazonaws.com
 
 Outputs:
-  ResultsTableArn:
-    Description: "Connections table ARN"
-    Value: !GetAtt ResultsTable.Arn
-
-  OnConnectFunctionArn:
-    Description: "OnConnect function ARN"
-    Value: !GetAtt OnConnectFunction.Arn
-
-  OnDisconnectFunctionArn:
-    Description: "OnDisconnect function ARN"
-    Value: !GetAtt OnDisconnectFunction.Arn
-
-  TaskExecuteFunctionArn:
-    Description: "TaskExecute function ARN"
-    Value: !GetAtt TaskExecuteFunction.Arn
-
-  TaskResultFunctionArn:
-    Description: "TaskResult function ARN"
-    Value: !GetAtt TaskResultFunction.Arn
-
-  MainLayerARN:
-    Value: !Ref MainLayer
-    Description: MainLayer ARN
-    Export:
-      Name: main-layer-arn
-
-  ProjectLayerARN:
-    Value: !Ref ProjectLayer
-    Description: ProjectLayer ARN
-    Export:
-      Name: project-layer-arn
-
   WebSocketURI:
     Description: "The WSS Protocol URI to connect to"
     Value:

@@ -6,7 +6,7 @@ test:
 	$(PYTHON) -m unittest discover -v
 
 .PHONY: wheel
-wheel:
+wheel: packaged
 	$(PYTHON) setup.py bdist_wheel
 
 .PHONY: packaged
