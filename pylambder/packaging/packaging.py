@@ -77,7 +77,6 @@ def _recursive_zip_write(zf: zipfile.ZipFile, relative_to: Path, dir: Path,
 
 def is_subpath(sub: PathOrString, ancestor: PathOrString) -> bool:
     """Returns True if sub is equal to ancestor or its subpath"""
-    print(f"is {sub} subpath of {ancestor}")
     try:
         PurePath(sub).relative_to(PurePath(ancestor))
         return True
