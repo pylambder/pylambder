@@ -1,35 +1,31 @@
 """Config loader. Global for now. Config file is loaded upon first use.
 The file is key=value pairs, one per line."""
 
+import logging
+import sys
 
-CONFIG_FILE = "local.config"
+logger = logging.getLogger(__name__)
 
+class MissingConfig(Exception):
+    def __init__(self, message, errors):
+        super().__init__(message)
+        self.errors = errors
 
-_config = None
+S3BUCKET = None 
+CLOUDFORMATION_STACK  = None
+AWS_LOGIN = None
+AWS_PASSWORD = None
 
-
-def load(file):
-    global _config
+def load_config():
     try:
-        with open(CONFIG_FILE, "r") as f:
-            split = (line.split("=", 2) for line in f)
-            skipped = (s for s in split if len(s) == 2)  # skip lines without '='
-            stripped = ([w.strip() for w in words] for words in skipped)
-            _config = _config if _config else dict()
-            _config.update({k: v for [k, v] in stripped})
-    except:
-        _config = _config if _config else dict()
+        import pylambder_config
+        S3BUCKET = pylambder_config.s3bucket
+        CLOUDFORMATION_STACK = pylambder_config.cloudformation_stack
+        AWS_LOGIN = pylambder_config.aws_login
+        AWS_PASSWORD = pylambder_config.aws_password
 
+    except AttributeError as attribute_err:
+        raise MissingConfig("Some values are missing in your pylambder config file.", attribute_err) from None
 
-def get(key):
-    global _config
-    if _config is None:
-        load(CONFIG_FILE)
-    return _config[key]
-
-
-def store(key, value):
-    global _config
-    if _config is None:
-        _config = dict()
-    _config[key] = value
+    except ImportError as import_err:
+        raise MissingConfig("Pylambder config is missing", import_err) from None
