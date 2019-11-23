@@ -95,7 +95,11 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['boto3>=1.9.210'],  # Optional
+    install_requires=[
+        'boto3>=1.9.210',
+        'websockets==8.0.2',
+        'janus==0.4.0',
+    ],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
