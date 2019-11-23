@@ -25,7 +25,7 @@ def upload_file_if_missing(bucket_name: str, file_path: PathOrString) -> Uri:
 
     with open(file_path, 'rb') as f:
         file_bytes = f.read()
-        upload_bytes_if_missing(bucket_name, file_bytes)
+        return upload_bytes_if_missing(bucket_name, file_bytes)
 
 
 def upload_bytes_if_missing(bucket_name: str, file_bytes) -> Uri:
@@ -62,9 +62,9 @@ def create_change_set(stack_name, template, change_set_name) -> str:
     return change_set_arn
 
 
-def execute_changeset(stack_name, chane_set_name):
+def execute_changeset(stack_name, change_set_arn):
     ex_response = cf_client.execute_change_set(
-        ChangeSetName=change_set_name
+        ChangeSetName=change_set_arn
     )
     logger.debug("Execute change set reponse: {}".format(ex_response))
     wait_for_stack_update(stack_name)
@@ -72,20 +72,21 @@ def execute_changeset(stack_name, chane_set_name):
 
 def wait_for_change_set_creation(change_set_arn):
     """Returns False if no changes are to be made, True otherwise"""
-    response = cf_client.describe_change_set(
-        ChangeSetName=change_set_arn,
-    )
-    status, reason = response['Status'], response.get('StatusReason', '')
-    logger.debug("Change set status: %s %s", status, reason)
-    if response == 'CREATE_COMPLETE':
-        return True
-    if response == 'FAILED':
-        if reason == 'No updates are to be performed.':
-            return False
-        else:
-            # TODO use pylambder exception
-            raise RuntimeError('Change set creation failed')
-    time.sleep(5)
+    while True:
+        response = cf_client.describe_change_set(
+            ChangeSetName=change_set_arn,
+        )
+        status, reason = response['Status'], response.get('StatusReason', '')
+        logger.debug("Change set status: %s %s", status, reason)
+        if status == 'CREATE_COMPLETE':
+            return True
+        if status == 'FAILED':
+            if reason == 'No updates are to be performed.':
+                return False
+            else:
+                # TODO use pylambder exception
+                raise RuntimeError('Change set creation failed')
+        time.sleep(1)
 
 
 def wait_for_stack_update(stack_name):
@@ -94,6 +95,7 @@ def wait_for_stack_update(stack_name):
         stack.reload()
         logger.debug(f"Stack '%s' status: %s", stack_name, stack.stack_status)
         if stack.stack_status not in ['CREATE_IN_PROGRESS', 'UPDATE_IN_PROGRESS']:
+            logger.info("Stack %s achieved status: %s", stack_name, stack.stack_status)
             break
         time.sleep(5)
     
