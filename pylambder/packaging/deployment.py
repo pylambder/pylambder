@@ -60,7 +60,7 @@ def _get_deps_list(application_dir: Path) -> [str]:
         with open(req_file, 'r') as f:
             return [l.lstrip() for l in f if l.strip() != '']
     else:
-        []
+        return []
 
 
 def _deploy(application_dir: Path, s3_bucket: str, stack_name: str):
