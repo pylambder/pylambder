@@ -1,6 +1,7 @@
 import logging
 import os
 import pkg_resources
+import datetime
 from pathlib import Path
 
 import pylambder.config as config
@@ -36,7 +37,8 @@ def deploy(application_dir='.'):
     os.makedirs(application_dir / ARTIFACTS_DIR, exist_ok=True)
 
     package(application_dir)
-    _upload(application_dir, config.get('s3bucket'))
+    _deploy(application_dir, config.get('s3bucket'), config.get('cloudformation_stack'))
+    logger.info("AWS deployment finished.")
 
 
 def _package(application_dir: Path):
@@ -61,22 +63,36 @@ def _get_deps_list(application_dir: Path) -> [str]:
         []
 
 
-def _upload(application_dir: Path, s3_bucket: str):
+def _deploy(application_dir: Path, s3_bucket: str, stack_name: str):
     uris = _upload_pylambder(s3_bucket)
     uris.update(_upload_project(s3_bucket))
+    template = format_template(uris)
+    change_set_name = F"{stack_name}-{datetime.datetime.now().strftime('%Y%m%dT%H%M%S')}"
+    change_set_arn = aws.create_change_set(stack_name, template, change_set_name)
+    if not aws.wait_for_change_set_creation(change_set_arn):
+        logger.info("Stack exists, no changes required")
+        return
+    aws.execute_changeset(stack_name, change_set_arn)
 
 
 def _upload_pylambder(bucket_name: str):
     """Upload pylambder functions"""
-    uris={}
+    uris = {}
     for fun in FUNCTION_NAMES:
-        zipbytes=pkg_resources.resource_string('pylambder', f'packaged/{fun}.zip')
-        uris[fun]=aws.upload_bytes_if_missing(bucket_name, zipbytes)
+        zip_bytes = pkg_resources.resource_string('pylambder', f'packaged/{fun}.zip')
+        uris[fun] = aws.upload_bytes_if_missing(bucket_name, zip_bytes)
     return uris
+
 
 def _upload_project(bucket_name: str):
     """Upload pylambder functions"""
-    uris={}
+    uris = {}
     for layer, archive in LAYERS.items():
-        uris[layer]=aws.upload_file_if_missing(bucket_name, archive)
+        uris[layer] = aws.upload_file_if_missing(bucket_name, archive)
     return uris
+
+
+def format_template(uris: dict):
+    template_body_format_str = pkg_resources.resource_string(
+        'pylambder', 'sam-data/template.yaml.template').decode()
+    return template_body_format_str.format(**uris)
