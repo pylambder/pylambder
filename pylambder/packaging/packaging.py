@@ -27,12 +27,15 @@ def create_packages_archive(target_path: str, package_specs: List[str]) -> None:
     # @TODO make python version customizable
     with tempfile.TemporaryDirectory(prefix=APP_NAME + "-") as tempdir:
         # TODO perhaps use `pip download` rather than `pip install`
-        if package_specs:
-            pip_command = ['pip', 'install', '-t', tempdir] + package_specs
-            subprocess.check_call(pip_command)
-
         with zipfile.ZipFile(target_path, mode='w') as zf:
-            _recursive_zip_write(zf, Path(tempdir), Path(tempdir), PREFIX)
+            if package_specs:
+                pip_command = ['pip', 'install', '-t', tempdir] + package_specs
+                subprocess.check_call(pip_command)
+                _recursive_zip_write(zf, Path(tempdir), Path(tempdir), PREFIX)
+            else:
+                # write empty file to the archive to prevent AWS complaining
+                # about empty zip
+                zf.writestr('PYLAMBDER_EMPTY', 'EMPTY')
 
 
 def create_project_archive(target_path: PathOrString, base_path: PathOrString,
@@ -65,10 +68,10 @@ def _recursive_zip_write(zf: zipfile.ZipFile, relative_to: Path, dir: Path,
     ignored = [PurePath(i) for i in ignored]
     common_prefix = PurePath(common_prefix)
 
-    for dirpath, subdirs, subfiles in os.walk(relative_to / dir):
+    for dirpath, _subdirs, subfiles in os.walk(relative_to / dir):
         dirpath = Path(dirpath)
 
-        for subdir in sorted(subdirs + subfiles):
+        for subdir in sorted(['.'] + subfiles):
             full_path = dirpath / subdir
             packaged_path = full_path.relative_to(relative_to)
             if not any(is_subpath(packaged_path, i) for i in ignored):
