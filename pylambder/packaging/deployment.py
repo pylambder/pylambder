@@ -19,7 +19,6 @@ LAYERS = {
 }
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 def package(application_dir='.'):
@@ -45,19 +44,22 @@ def _package(application_dir: Path):
     """Prepare application for upload by creating zip packages."""
     project_archive_path = application_dir / PROJECT_ARCHIVE
     deps_archive_path = application_dir / DEPENDENCIES_ARCHIVE
-    deps_list = _get_deps_list(application_dir)
 
     packaging.create_project_archive(project_archive_path, application_dir,
                                      [application_dir], [ARTIFACTS_DIR, '.git'])
 
-    logger.info('Downloading project dependencies:\n' + '\n'.join(deps_list))
-    packaging.create_packages_archive(deps_archive_path, deps_list)
+    deps_file = _get_deps_file(application_dir)
+    logger.info('Downloading project dependencies listed in {}'.format(deps_file))
+    packaging.create_packages_archive(deps_archive_path, _get_deps_list(deps_file))
 
 
-def _get_deps_list(application_dir: Path) -> [str]:
-    req_file = application_dir / 'requirements.txt'
-    if req_file.is_file():
-        with open(req_file, 'r') as f:
+def _get_deps_file(application_dir: Path) -> Path:
+    return Path(application_dir / 'requirements.txt')
+
+
+def _get_deps_list(deps_file: Path) -> [str]:
+    if deps_file.is_file():
+        with open(deps_file, 'r') as f:
             return [l.lstrip() for l in f if l.strip() != '']
     else:
         []
