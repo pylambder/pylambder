@@ -6,7 +6,6 @@ import pylambder.configuration.configuration as configuration
 import pylambder.config as config
 
 
-
 def main():
     logging.basicConfig()
     pylambder_logger = logging.getLogger('pylambder')
