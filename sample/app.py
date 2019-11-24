@@ -34,7 +34,6 @@ if __name__ == '__main__':
     pylambder_logger.setLevel(logging.DEBUG)
 
     logger.info("Start task ----------------------------------------")
-    #time.sleep(15)
     task = myfunc.delay(1, 2).set_callback(test_callback)
     myfunc.delay(5,6)
     myfunc.delay(7,8)
