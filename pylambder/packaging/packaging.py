@@ -15,6 +15,9 @@ PathOrString = Union[Path, str]
 PREFIX = PurePath('python/lib/python3.7/site-packages')
 AWS_PLATFORM = 'manylinux1_x86_64'
 
+ALWAYS_IGNORE_EXT = ['.pyc']
+ALWAYS_IGNORE_PATH = ['__pycache__']
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -86,7 +89,9 @@ def _recursive_zip_write(zf: zipfile.ZipFile, relative_to: Path, dir: Path,
         for subdir in sorted(['.'] + subfiles):
             full_path = dirpath / subdir
             packaged_path = full_path.relative_to(relative_to)
-            if not any(is_subpath(packaged_path, i) for i in ignored):
+            if not any(is_subpath(packaged_path, i) for i in ignored) \
+                and not any(i in str(packaged_path) for i in ALWAYS_IGNORE_PATH) \
+                    and not any(str(packaged_path)[-len(i):] == i for i in ALWAYS_IGNORE_EXT):
                 zf.write(full_path, common_prefix / packaged_path)
 
 
