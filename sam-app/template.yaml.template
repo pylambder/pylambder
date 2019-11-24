@@ -13,7 +13,7 @@ Globals:
 Parameters:
   TableName:
     Type: String
-    Default: "task-results"
+    Default: {table-name}
     Description: (Required) The name of the new DynamoDB to store results.
     MinLength: 3
     MaxLength: 50
@@ -90,7 +90,8 @@ Resources:
     Properties:
       ApiId: !Ref TasksWebSocket
       RouteKey: $connect
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref Authorizer
       OperationName: ConnectRoute
       Target: !Join # Join with specified delimiter (here: `/`)
         - "/"
@@ -123,6 +124,37 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref OnConnectFunction
       Principal: apigateway.amazonaws.com
+
+  ## Authorizer
+
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: authorizer/
+      Handler: handler.lambda_handler
+      MemorySize: &memory-size 256
+      Runtime: python3.7
+
+  AuthorizerPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - TasksWebSocket
+      - AuthorizerFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref AuthorizerFunction
+      Principal: apigateway.amazonaws.com
+
+  Authorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties: 
+      ApiId: !Ref TasksWebSocket
+      AuthorizerType: REQUEST
+      AuthorizerUri: 
+        Fn::Sub: arn:aws:apigateway:${{AWS::Region}}:lambda:path/2015-03-31/functions/${{AuthorizerFunction.Arn}}/invocations
+      IdentitySource: 
+        - $connect.request.header.Auth
+      Name: ConnectionAuthorizer
 
   ## Disconnect
 

@@ -66,8 +66,10 @@ def _get_deps_list(application_dir: Path) -> [str]:
 def _deploy(application_dir: Path, s3_bucket: str, stack_name: str):
     uris = _upload_pylambder(s3_bucket)
     uris.update(_upload_project(s3_bucket))
-    template = format_template(uris)
     change_set_name = F"{stack_name}-{datetime.datetime.now().strftime('%Y%m%dT%H%M%S')}"
+    table_name = F"{stack_name}-results"
+    uris.update({"table-name": table_name})
+    template = format_template(uris)
     change_set_arn = aws.create_change_set(stack_name, template, change_set_name)
     if not aws.wait_for_change_set_creation(change_set_arn):
         logger.info("Stack exists, no changes required")
