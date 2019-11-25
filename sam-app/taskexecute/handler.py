@@ -22,21 +22,23 @@ def lambda_handler(event, context):
     request_id = context.aws_request_id
     apigw_management = create_socket_client(domain_name, stage)
     uuid = body['uuid']
-    function, args, kwargs = get_function_with_args(body)
-
-    scheduledResponse = {
-        'requestId': request_id,
-        'uuid': uuid,
-        'status': TaskStatus.STARTED
-    }
-    store_state(TaskStatus.STARTED, request_id, uuid)
-    status = send_to_client(connection_id, scheduledResponse, apigw_management)
-    if(status['statusCode'] != 200):
-        return status 
+    task_status = TaskStatus.SENT
 
     try:
-        result = function.run(*args, **kwargs)
-        task_status = TaskStatus.FINISHED
+        function, args, kwargs = get_function_with_args(body)
+
+        scheduledResponse = {
+            'requestId': request_id,
+            'uuid': uuid,
+            'status': TaskStatus.STARTED
+        }
+        store_state(TaskStatus.STARTED, request_id, uuid)
+        status = send_to_client(connection_id, scheduledResponse, apigw_management)
+        if(status['statusCode'] != 200):
+            return status
+
+            result = function.run(*args, **kwargs)
+            task_status = TaskStatus.FINISHED
     except Exception as ex:
         result = repr(ex)
         task_status = TaskStatus.FAILED
