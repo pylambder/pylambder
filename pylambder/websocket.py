@@ -83,7 +83,8 @@ class WebsocketHandler:
         """Main loop of the websocket."""
         api_url = self.app.api_url
         LOGGER.info(F"Opening websocket connection to {api_url}")
-        async with websockets.connect(api_url) as websocket:
+        token="test"
+        async with websockets.connect(F"{api_url}?token={token}") as websocket:
             LOGGER.info("Websocket connected")
             consumer_task = asyncio.create_task(self._sender(websocket))
             producer_task = asyncio.create_task(self._receiver(websocket))
