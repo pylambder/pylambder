@@ -98,7 +98,7 @@ def wait_for_stack_update(stack_name):
             logger.info("Stack %s achieved status: %s", stack_name, stack.stack_status)
             break
         time.sleep(5)
-    
+
 
 def _s3_object_exists(bucket_name, key) -> bool:
     try:
@@ -119,13 +119,6 @@ def _stack_exists(name) -> bool:
     except ClientError as ex:
         print("Client error: ", ex)
         return False
-
-
-
-def _file_md5sum(path: Path) -> str:
-    """Calculates md5sum of a file at given path"""
-    content = path.read_bytes()
-    return str(hashlib.md5(content).hexdigest())
 
 
 def _bytes_md5sum(binary):

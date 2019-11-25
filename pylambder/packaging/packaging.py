@@ -3,6 +3,7 @@
 import logging
 import os
 import subprocess
+import json
 import tempfile
 import zipfile
 from pathlib import Path, PurePath
@@ -34,6 +35,7 @@ def create_packages_archive(target_path: str, deps_list) -> None:
     with tempfile.TemporaryDirectory(prefix=APP_NAME + "-") as tempdir, \
             zipfile.ZipFile(target_path, mode='w') as zf:
         deps_list = _filter_out_existing_packages(deps_list)
+        zf.writestr('MANIFEST', json.dumps(sorted(deps_list)))
         if deps_list:
             pip_command = [
                 'pip', 'install', '-t', tempdir,
@@ -48,7 +50,19 @@ def create_packages_archive(target_path: str, deps_list) -> None:
             zf.writestr('PYLAMBDER_EMPTY', 'EMPTY')
 
 
+def is_packages_archive_up_to_date(archive_path: str, deps_list):
+    new_deps_list = sorted(_filter_out_existing_packages(deps_list))
+    try:
+        with zipfile.ZipFile(archive_path, mode='r') as zf:
+            manifest = zf.open('MANIFEST')
+            old_deps_list = json.loads(manifest.read())
+            return old_deps_list == new_deps_list
+    except:
+        return False
+
+
 def _filter_out_existing_packages(deps_list):
+    """Filter out packages supplied by a public AWS layer"""
     ignored_packages = ['numpy', 'scipy']
     return [dep for dep in deps_list if not any(ignore in dep for ignore in ignored_packages)]
 
