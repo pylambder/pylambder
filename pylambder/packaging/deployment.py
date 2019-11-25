@@ -1,4 +1,5 @@
 import logging
+import sys
 import os
 import pkg_resources
 import datetime
@@ -84,7 +85,8 @@ def _deploy(application_dir: Path, s3_bucket: str, stack_name: str):
     if not aws.wait_for_change_set_creation(change_set_arn):
         logger.info("Stack exists, no changes required")
         return
-    aws.execute_changeset(stack_name, change_set_arn)
+    if not aws.execute_changeset(stack_name, change_set_arn):
+        sys.exit(1)
 
 
 def _upload_pylambder(bucket_name: str):
