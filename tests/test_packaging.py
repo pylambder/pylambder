@@ -19,7 +19,7 @@ class TestPackaging(unittest.TestCase):
             self.assertTrue(os.path.isfile(archive_path))
             zip = zipfile.ZipFile(archive_path)
 
-            self.assertEqual(['PYLAMBDER_EMPTY'], zip.namelist())
+            self.assertCountEqual(['PYLAMBDER_EMPTY', 'MANIFEST'], zip.namelist())
 
     def test_dependencies_archive_creation(self):
         def pip_mock(command):

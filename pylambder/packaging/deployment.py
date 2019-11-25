@@ -8,9 +8,11 @@ import pylambder.config as config
 import pylambder.packaging.packaging as packaging
 import pylambder.packaging.aws as aws
 
+DEPS_FILE = Path('requirements.txt')
 ARTIFACTS_DIR = Path('build/pylambder/')
 PROJECT_ARCHIVE = ARTIFACTS_DIR / Path('project.zip')
 DEPENDENCIES_ARCHIVE = ARTIFACTS_DIR / Path('requirements.zip')
+DEPENDENCIES_ARCHIVE_VSN = ARTIFACTS_DIR / Path('requirements.txt.md5')
 
 FUNCTION_NAMES = ['onconnect', 'ondisconnect', 'taskexecute', 'taskresult']
 LAYERS = {
@@ -49,12 +51,19 @@ def _package(application_dir: Path):
                                      [application_dir], [ARTIFACTS_DIR, '.git'])
 
     deps_file = _get_deps_file(application_dir)
-    logger.info('Downloading project dependencies listed in {}'.format(deps_file))
-    packaging.create_packages_archive(deps_archive_path, _get_deps_list(deps_file))
+    deps_list = _get_deps_list(deps_file)
+    if not packaging.is_packages_archive_up_to_date(
+            deps_archive_path, deps_list):
+        logger.info('Downloading project dependencies listed in {}'.
+                    format(deps_file))
+        packaging.create_packages_archive(
+            deps_archive_path, _get_deps_list(deps_file))
+    else:
+        logger.info('Dependencies package exists at {}'.format(str(deps_archive_path)))
 
 
 def _get_deps_file(application_dir: Path) -> Path:
-    return Path(application_dir / 'requirements.txt')
+    return Path(application_dir) / DEPS_FILE
 
 
 def _get_deps_list(deps_file: Path) -> [str]:
