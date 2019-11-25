@@ -38,7 +38,7 @@ def create_packages_archive(target_path: str, deps_list) -> None:
         zf.writestr('MANIFEST', json.dumps(sorted(deps_list)))
         if deps_list:
             pip_command = [
-                'pip', 'install', '-t', tempdir,
+                'pip3', 'install', '-t', tempdir,
                 '--platform', AWS_PLATFORM, '--only-binary=:all:',
             ] + deps_list
             logger.debug

@@ -4,50 +4,39 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 
-def lambda_handler(event, context, callback):
+def lambda_handler(event, context):
+    logger.info(F"Event: {event}")
+    logger.info(F"Context: {context}")
     # Retrieve request parameters from the Lambda function input:
-    headers = event.headers;
-    queryStringParameters = event.queryStringParameters;
-    stageVariables = event.stageVariables;
-    requestContext = event.requestContext;
-       
-    # Parse the input for the parameter values
-    tmp = event.methodArn.split(':');
-    apiGatewayArnTmp = tmp[5].split('/');
-    awsAccountId = tmp[4];
-    region = tmp[3];
-    restApiId = apiGatewayArnTmp[0];
-    stage = apiGatewayArnTmp[1];
-    route = apiGatewayArnTmp[2];
-       
+    token = event['queryStringParameters']['token']
    # Perform authorization to return the Allow policy for correct parameters and 
    # the 'Unauthorized' error, otherwise.
-    if headers.Auth == "test":
-        callback(None, generateAllow('me', event.methodArn));
+    if token == "test":
+        return generate_allow('me', event["methodArn"])
     else:
-        callback("Unauthorized");
+        return generate_deny('me', event["methodArn"])
 
     
 #Help function to generate an IAM policy
-def generatePolicy(principalId, effect, resource):
+def generate_policy(principalId, effect, resource):
     # Required output:
-    authResponse = {};
-    authResponse.principalId = principalId;
+    auth_response = {};
+    auth_response["principalId"] = principalId
     if effect and resource:
-        policyDocument = {};
-        policyDocument.Version = '2012-10-17'; # default version
-        policyDocument.Statement = [];
-        statementOne = {};
-        statementOne["Action"] = 'execute-api:Invoke'; # default action
-        statementOne["Effect"] = effect;
-        statementOne["Resource"] = resource;
-        policyDocument["Statement"][0] = statementOne;
-        authResponse.policyDocument = policyDocument;
+        policy_document = {}
+        policy_document["Version"] = '2012-10-17'; # default version
+        policy_document["Statement"] = []
+        statement_one = {}
+        statement_one["Action"] = 'execute-api:Invoke'
+        statement_one["Effect"] = effect
+        statement_one["Resource"] = resource
+        policy_document["Statement"].append(statement_one)
+        auth_response["policyDocument"] = policy_document;
 
-    return authResponse;
+    return auth_response;
     
-def generateAllow(principalId, resource):
-    return generatePolicy(principalId, 'Allow', resource);
+def generate_allow(principalId, resource):
+    return generate_policy(principalId, 'Allow', resource);
     
-def generateDeny(principalId, resource):
-    return generatePolicy(principalId, 'Deny', resource);
+def generate_deny(principalId, resource):
+    return generate_policy(principalId, 'Deny', resource);

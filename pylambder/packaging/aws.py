@@ -25,6 +25,7 @@ def upload_file_if_missing(bucket_name: str, file_path: PathOrString) -> Uri:
 
     with open(file_path, 'rb') as f:
         file_bytes = f.read()
+        logger.info("File path {}".format(file_path))
         return upload_bytes_if_missing(bucket_name, file_bytes)
 
 

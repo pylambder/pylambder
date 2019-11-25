@@ -152,8 +152,8 @@ Resources:
       AuthorizerType: REQUEST
       AuthorizerUri: 
         Fn::Sub: arn:aws:apigateway:${{AWS::Region}}:lambda:path/2015-03-31/functions/${{AuthorizerFunction.Arn}}/invocations
-      IdentitySource: 
-        - route.request.headers.Auth
+      IdentitySource:
+        - route.request.querystring.token
       Name: ConnectionAuthorizer
 
   ## Disconnect
