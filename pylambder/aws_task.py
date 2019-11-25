@@ -22,6 +22,9 @@ class CloudFunction:
         self.app = pylambder_app
 
     def run(self, *args, **kwargs):
+        return self(*args, **kwargs)
+
+    def __call__(self, *args, **kwargs):
         return self.function(*args, **kwargs)
 
     def delay(self, *args, **kwargs):
@@ -57,6 +60,7 @@ class AWSTask:
 
     def set_callback(self, callback):
         if self.status == TaskStatus.FINISHED:
+            self.callback = callback
             self.result = callback(self.result)
         else:
             self.callback = callback

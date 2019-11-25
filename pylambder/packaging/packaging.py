@@ -20,7 +20,6 @@ ALWAYS_IGNORE_EXT = ['.pyc']
 ALWAYS_IGNORE_PATH = ['__pycache__']
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 def create_packages_archive(target_path: str, deps_list) -> None:

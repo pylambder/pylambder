@@ -55,7 +55,7 @@ class WebsocketHandler:
         task_uuid = decoded['uuid']
         if 'status' in decoded:
             task_status = aws_task.TaskStatus(int(decoded['status']))
-            LOGGER.info(F"Task {task_uuid} changed status to {task_status.name}")
+            LOGGER.debug(F"Task {task_uuid} changed status to {task_status.name}")
             self.app.tasks[task_uuid].status = task_status
             if task_status in (aws_task.TaskStatus.FINISHED, aws_task.TaskStatus.FAILED):
                 task_result = decoded['result']
