@@ -16,8 +16,6 @@ class MissingConfig(Exception):
 
 S3BUCKET = None
 CLOUDFORMATION_STACK = None
-AWS_LOGIN = None
-AWS_PASSWORD = None
 
 
 def load_config():
@@ -25,14 +23,10 @@ def load_config():
     try:
         global S3BUCKET
         global CLOUDFORMATION_STACK
-        global AWS_LOGIN
-        global AWS_PASSWORD
 
         import pylambder_config
         S3BUCKET = pylambder_config.s3bucket
         CLOUDFORMATION_STACK = pylambder_config.cloudformation_stack
-        AWS_LOGIN = pylambder_config.aws_login
-        AWS_PASSWORD = pylambder_config.aws_password
         if S3BUCKET is None:
             raise MissingConfig('Pylambder config "s3bucket" is missing')
         if CLOUDFORMATION_STACK is None:
