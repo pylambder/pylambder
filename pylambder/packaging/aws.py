@@ -126,7 +126,6 @@ def _stack_exists(name) -> bool:
         # changeset distinction.
         return stack.stack_status != 'REVIEW_IN_PROGRESS'
     except ClientError as ex:
-        print("Client error: ", ex)
         return False
 
 
