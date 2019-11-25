@@ -62,12 +62,12 @@ def create_change_set(stack_name, template, change_set_name) -> str:
     return change_set_arn
 
 
-def execute_changeset(stack_name, change_set_arn):
+def execute_changeset(stack_name, change_set_arn) -> bool:
     ex_response = cf_client.execute_change_set(
         ChangeSetName=change_set_arn
     )
     logger.debug("Execute change set reponse: {}".format(ex_response))
-    wait_for_stack_update(stack_name)
+    return wait_for_stack_update(stack_name)
 
 
 def wait_for_change_set_creation(change_set_arn):
@@ -85,18 +85,27 @@ def wait_for_change_set_creation(change_set_arn):
                 return False
             else:
                 # TODO use pylambder exception
+                logger.error("ChangeSet creation failed: %s %s",
+                             status, reason)
                 raise RuntimeError('Change set creation failed')
         time.sleep(1)
 
 
-def wait_for_stack_update(stack_name):
+def wait_for_stack_update(stack_name) -> bool:
+    """Returns boolean indicating update success"""
+
     stack = cf_resource.Stack(stack_name)
     while True:
         stack.reload()
         logger.debug(f"Stack '%s' status: %s", stack_name, stack.stack_status)
+        if 'ROLLBACK' in stack.stack_status or 'FAILED' in stack.stack_status:
+            logger.error("Stack update failure: %s %s",
+                         stack.stack_status, stack.stack_status_reason)
+            return False
+
         if stack.stack_status not in ['CREATE_IN_PROGRESS', 'UPDATE_IN_PROGRESS']:
             logger.info("Stack %s achieved status: %s", stack_name, stack.stack_status)
-            break
+            return True
         time.sleep(5)
 
 
