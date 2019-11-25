@@ -23,6 +23,7 @@ def lambda_handler(event, context):
     apigw_management = create_socket_client(domain_name, stage)
     uuid = body['uuid']
     task_status = TaskStatus.SENT
+    result = None
 
     try:
         function, args, kwargs = get_function_with_args(body)
@@ -37,12 +38,13 @@ def lambda_handler(event, context):
         if(status['statusCode'] != 200):
             return status
 
-            result = function.run(*args, **kwargs)
-            task_status = TaskStatus.FINISHED
+        result = function.run(*args, **kwargs)
+        task_status = TaskStatus.FINISHED
     except Exception as ex:
         result = repr(ex)
         task_status = TaskStatus.FAILED
 
+    logger.debug("Task status: %s", task_status)
     status = send_to_client(connection_id, {"status": task_status, "uuid": uuid, "result": result}, apigw_management)
     if(status['statusCode'] != 200):
         return status
