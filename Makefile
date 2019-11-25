@@ -14,7 +14,7 @@ sdist: packaged
 	$(PYTHON) setup.py sdist
 
 .PHONY: packaged
-packaged: onconnect.zip ondisconnect.zip taskexecute.zip taskresult.zip
+packaged: onconnect.zip ondisconnect.zip taskexecute.zip taskresult.zip authorizer.zip
 
 %.zip: sam-app/%
 	mkdir -p packaged
