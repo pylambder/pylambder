@@ -1,7 +1,7 @@
 """Module responsible for packaging code and dependencies for upload"""
 
+import logging
 import os
-import shutil
 import subprocess
 import tempfile
 import zipfile
@@ -13,9 +13,16 @@ from pylambder import APP_NAME
 PathOrString = Union[Path, str]
 
 PREFIX = PurePath('python/lib/python3.7/site-packages')
+AWS_PLATFORM = 'manylinux1_x86_64'
+
+ALWAYS_IGNORE_EXT = ['.pyc']
+ALWAYS_IGNORE_PATH = ['__pycache__']
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
-def create_packages_archive(target_path: str, package_specs: List[str]) -> None:
+def create_packages_archive(target_path: str, deps_list) -> None:
     """Obtains specified packages and puts them in a zip file
     ready to by uploaded to AWS
 
@@ -24,17 +31,26 @@ def create_packages_archive(target_path: str, package_specs: List[str]) -> None:
         version restrictions
     """
 
-    with tempfile.TemporaryDirectory(prefix=APP_NAME + "-") as tempdir:
-        # TODO perhaps use `pip download` rather than `pip install`
-        with zipfile.ZipFile(target_path, mode='w') as zf:
-            if package_specs:
-                pip_command = ['pip', 'install', '-t', tempdir] + package_specs
-                subprocess.check_call(pip_command)
-                _recursive_zip_write(zf, Path(tempdir), Path(tempdir), PREFIX)
-            else:
-                # write empty file to the archive to prevent AWS complaining
-                # about empty zip
-                zf.writestr('PYLAMBDER_EMPTY', 'EMPTY')
+    with tempfile.TemporaryDirectory(prefix=APP_NAME + "-") as tempdir, \
+            zipfile.ZipFile(target_path, mode='w') as zf:
+        deps_list = _filter_out_existing_packages(deps_list)
+        if deps_list:
+            pip_command = [
+                'pip', 'install', '-t', tempdir,
+                '--platform', AWS_PLATFORM, '--only-binary=:all:',
+            ] + deps_list
+            logger.debug
+            subprocess.check_call(pip_command)
+            _recursive_zip_write(zf, Path(tempdir), Path(tempdir), PREFIX)
+        else:
+            # write empty file to the archive to prevent AWS complaining
+            # about empty zip
+            zf.writestr('PYLAMBDER_EMPTY', 'EMPTY')
+
+
+def _filter_out_existing_packages(deps_list):
+    ignored_packages = ['numpy', 'scipy']
+    return [dep for dep in deps_list if not any(ignore in dep for ignore in ignored_packages)]
 
 
 def create_project_archive(target_path: PathOrString, base_path: PathOrString,
@@ -73,7 +89,9 @@ def _recursive_zip_write(zf: zipfile.ZipFile, relative_to: Path, dir: Path,
         for subdir in sorted(['.'] + subfiles):
             full_path = dirpath / subdir
             packaged_path = full_path.relative_to(relative_to)
-            if not any(is_subpath(packaged_path, i) for i in ignored):
+            if not any(is_subpath(packaged_path, i) for i in ignored) \
+                and not any(i in str(packaged_path) for i in ALWAYS_IGNORE_PATH) \
+                    and not any(str(packaged_path)[-len(i):] == i for i in ALWAYS_IGNORE_EXT):
                 zf.write(full_path, common_prefix / packaged_path)
 
 
