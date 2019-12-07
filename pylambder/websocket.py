@@ -52,8 +52,8 @@ class WebsocketHandler:
         """Received message handling logic. This function will be invoked on
         all received messages."""
         decoded = json.loads(msg)
-        task_uuid = decoded['uuid']
-        if 'status' in decoded:
+        if 'status' in decoded and 'uuid' in decoded:
+            task_uuid = decoded['uuid']
             task_status = aws_task.TaskStatus(int(decoded['status']))
             LOGGER.debug(F"Task {task_uuid} changed status to {task_status.name}")
             self.app.tasks[task_uuid].status = task_status
