@@ -184,7 +184,7 @@ Resources:
     Properties:
       CodeUri: {ondisconnect}
       Handler: handler.lambda_handler
-      MemorySize: 256
+      MemorySize: 1024
       Runtime: python3.7
 
   OnDisconnectPermission:
@@ -227,6 +227,7 @@ Resources:
       Handler: handler.lambda_handler
       MemorySize: 256
       Runtime: python3.7
+      Timeout: 300
       Environment:
         Variables:
           TABLE_NAME: !Ref TableName
