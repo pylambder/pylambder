@@ -84,7 +84,7 @@ class AWSTask:
 
                 self.callback_thread = Thread(target=self.__invoke_callback, args=(status, result,))
                 self.callback_thread.setDaemon(True)
-                self.callback_thread.run()
+                self.callback_thread.start()
         elif status == TaskStatus.FAILED:
             self.status = status
             # create exception object which repr() we have
