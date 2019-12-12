@@ -6,8 +6,8 @@ import datetime
 from pathlib import Path
 
 import pylambder.config as config
-import pylambder.packaging.packaging as packaging
-import pylambder.packaging.aws as aws
+import pylambder.cli.packaging as packaging
+import pylambder.cli.aws as aws
 
 DEPS_FILE = Path('requirements.txt')
 ARTIFACTS_DIR = Path('build/pylambder/')

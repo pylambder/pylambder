@@ -1,3 +1,8 @@
+"""
+Module encapsulating interaction AWS management - creation and retrieval
+of resources.
+"""
+
 import logging
 import hashlib
 import time

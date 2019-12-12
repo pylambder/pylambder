@@ -1,9 +1,9 @@
 import logging
 import sys
 
-import pylambder.packaging.deployment as deployment
-import pylambder.configuration.configuration as configuration
 import pylambder.config as config
+import pylambder.configuration.configuration as configuration
+import pylamdber.cli.deployment as deployment
 
 
 def main():
