@@ -19,3 +19,7 @@ packaged: onconnect.zip ondisconnect.zip taskexecute.zip taskresult.zip authoriz
 %.zip: pylambder/server/%
 	mkdir -p packaged
 	cd $< && zip -FSr $(PWD)/packaged/$@ ./
+
+.PHONY: clean
+clean:
+	git clean -fxd -e .idea -e '*.iml'
