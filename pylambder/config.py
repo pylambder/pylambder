@@ -16,21 +16,28 @@ class MissingConfig(Exception):
 
 S3BUCKET = None
 CLOUDFORMATION_STACK = None
+API_TOKEN = None
 
 
 def load_config():
     sys.path.insert(0, os.getcwd())
     try:
+        import pylambder_config
+
         global S3BUCKET
         global CLOUDFORMATION_STACK
-
-        import pylambder_config
+        global API_TOKEN
+    
         S3BUCKET = pylambder_config.s3bucket
         CLOUDFORMATION_STACK = pylambder_config.cloudformation_stack
-        if S3BUCKET is None:
-            raise MissingConfig('Pylambder config "s3bucket" is missing')
-        if CLOUDFORMATION_STACK is None:
-            raise MissingConfig('Pylambder config "cloudformation_stack" is missing')
+        API_TOKEN = pylambder_config.api_token
+
+        if not S3BUCKET:
+            raise MissingConfig('Pylambder config variable "s3bucket" is empty')
+        if not CLOUDFORMATION_STACK:
+            raise MissingConfig('Pylambder config variable "cloudformation_stack" is empty')
+        if not API_TOKEN:
+            raise MissingConfig('Pylambder config variable "api_token" is empty')
 
     except AttributeError as attribute_err:
         raise MissingConfig("Some values are missing in your pylambder config file.", attribute_err) from None

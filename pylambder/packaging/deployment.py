@@ -78,7 +78,8 @@ def _get_deps_list(deps_file: Path) -> [str]:
 def _deploy(application_dir: Path, s3_bucket: str, stack_name: str):
     uris = _upload_pylambder(s3_bucket)
     uris.update(_upload_project(s3_bucket))
-    uris.update({"table-name": F"{stack_name}-result-table"})
+    uris["table-name"] = F"{stack_name}-result-table"
+    uris["api-token"] = config.API_TOKEN
     template = format_template(uris)
     change_set_name = F"{stack_name}-{datetime.datetime.now().strftime('%Y%m%dT%H%M%S')}"
     change_set_arn = aws.create_change_set(stack_name, template, change_set_name)
