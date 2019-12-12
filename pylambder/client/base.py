@@ -8,8 +8,8 @@ import os
 import boto3
 
 from pylambder import config
-from pylambder.aws_task import CloudFunction
-from pylambder.websocket import WebsocketHandler
+from pylambder.client.aws_task import CloudFunction
+from pylambder.client.websocket import WebsocketHandler
 
 logger = logging.getLogger(__name__)
 

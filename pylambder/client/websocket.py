@@ -8,7 +8,8 @@ import boto3
 import janus
 import websockets
 
-from pylambder import aws_task, config
+from pylambder import config
+from pylambder.client import aws_task
 
 QUEUE_MAX_SIZE = 1000
 

@@ -3,7 +3,7 @@ import sys
 
 import pylambder.config as config
 import pylambder.configuration.configuration as configuration
-import pylamdber.cli.deployment as deployment
+import pylambder.cli.deployment as deployment
 
 
 def main():
