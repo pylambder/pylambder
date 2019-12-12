@@ -2,8 +2,7 @@ import logging
 import sys
 
 import pylambder.config as config
-import pylambder.configuration.configuration as configuration
-import pylambder.cli.deployment as deployment
+from pylambder.cli import packaging, deployment, configuration
 
 
 def main():
