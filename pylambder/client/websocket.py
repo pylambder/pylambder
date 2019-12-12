@@ -36,7 +36,6 @@ class WebsocketHandler:
             raise Exception("Handler already running")
         else:
             self.loop = asyncio.new_event_loop()
-            self.loop.set_debug(True)
             self.queue = janus.Queue(loop=self.loop)
             self.worker = threading.Thread(target=self._websocket_thread)
             self.worker.setDaemon(True)
