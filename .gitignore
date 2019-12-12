@@ -2,6 +2,7 @@ local.config
 /packaged
 
 .idea
+/*.iml
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -22,7 +22,7 @@ class Pylambder:
 
     def __init__(self):
         if not self._is_lambda():
-            config.load_config()
+            config.ensure_loaded()
             self.api_url = self._obtain_api_url()
             self.tasks = dict()
             self.websocket_hander = WebsocketHandler(self)

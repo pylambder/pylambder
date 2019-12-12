@@ -134,6 +134,9 @@ Resources:
       Handler: handler.lambda_handler
       MemorySize: &memory-size 256
       Runtime: python3.7
+      Environment:
+        Variables:
+            API_TOKEN: {api-token}
 
   AuthorizerPermission:
     Type: AWS::Lambda::Permission

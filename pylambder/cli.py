@@ -22,7 +22,7 @@ def main():
         deployment.package(app_path)
 
     elif sys.argv[1] == 'deploy':
-        config.load_config()
+        config.ensure_loaded()
         app_path = sys.argv[2] if len(sys.argv) >= 3 else '.'
         deployment.deploy(app_path)
 

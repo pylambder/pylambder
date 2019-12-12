@@ -4,6 +4,10 @@ basic_user_config_template = """
 # AWS Names
 s3bucket = "your-bucket-anem"
 cloudformation_stack = "your-stack-name"
+
+# Pylambder API credentials
+api_token = "{api_token}"
+
 # AWS Credentials
 # Warning: Storing your credentials in plaintext is not recommended
 aws_access_key_id = "aws-key-id"
