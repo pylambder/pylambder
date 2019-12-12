@@ -16,6 +16,6 @@ sdist: packaged
 .PHONY: packaged
 packaged: onconnect.zip ondisconnect.zip taskexecute.zip taskresult.zip authorizer.zip
 
-%.zip: sam-app/%
+%.zip: pylambder/server/%
 	mkdir -p packaged
 	cd $< && zip -FSr $(PWD)/packaged/$@ ./

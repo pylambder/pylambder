@@ -109,5 +109,5 @@ def _upload_project(bucket_name: str):
 
 def format_template(uris: dict):
     template_body_format_str = pkg_resources.resource_string(
-        'pylambder', 'sam-data/template.yaml.template').decode()
+        'pylambder', 'server/cloudformation.yaml.template').decode()
     return template_body_format_str.format(**uris)
