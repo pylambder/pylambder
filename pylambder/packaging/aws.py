@@ -134,7 +134,7 @@ boto_resources = {}
 boto_clients = {}
 
 
-def _get_boto_resource(name):
+def _get_boto_resource(name: str):
     if name not in boto_resources:
         config.ensure_loaded()
         resource = boto3.resource(name,
@@ -144,7 +144,7 @@ def _get_boto_resource(name):
     return boto_resources[name]
 
 
-def _get_boto_client(name):
+def _get_boto_client(name: str):
     if name not in boto_clients:
         config.ensure_loaded()
         client = boto3.client(name,
