@@ -97,7 +97,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'boto3>=1.9.210',
-        'websockets~=8.0',
+        'websockets>=8,<10',
         'janus==0.4.0',
     ],  # Optional
 
